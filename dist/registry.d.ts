@@ -1,3 +1,6 @@
+export type OpticalSize = 20 | 24 | 40 | 48;
+export type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700;
+export type Fill = boolean;
 export type Theme = 'rounded' | 'outlined' | 'sharp';
 export interface SymbolSvg {
     d: string;
@@ -25,3 +28,14 @@ export declare function registerRawSymbol(k: Partial<SymbolKey> & {
 }, rawSvg: string): void;
 export declare function autoRegisterCustom(map: Record<string, Readonly<Record<number, unknown>>>): void;
 export declare function registerMultipleSizes(icon: string, sizes: readonly number[], resolveRawSvg: (size: number) => string, options?: Partial<Pick<SymbolKey, 'theme' | 'fill' | 'weight'>>): void;
+export type IconConfig = {
+    sizes: readonly OpticalSize[];
+    weights?: readonly Weight[];
+    fills?: readonly Fill[];
+    themes?: readonly Theme[];
+};
+export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown>>>>;
+export declare function defineIcons<S extends Record<string, Partial<IconConfig>>, C extends DefineCustomMap = Record<never, never>>(symbols: S, custom?: C): {
+    readonly Symbols: S;
+    readonly Custom: C;
+};

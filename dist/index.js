@@ -3,17 +3,17 @@ const g = {};
 function w(e) {
   return Array.from(new Set(e));
 }
-async function P(e) {
+async function I(e) {
   await g.mkdir(e, { recursive: !0 });
 }
-async function W(e) {
+async function P(e) {
   try {
     return await g.access(e), !0;
   } catch {
     return !1;
   }
 }
-function I(e, t) {
+function W(e, t) {
   const s = e === 400 ? "" : `wght${e}`, i = t === 0 ? "" : `fill${t}`, r = `${s}${i}`;
   return r.length ? r : "default";
 }
@@ -31,7 +31,7 @@ async function B(e) {
   } catch {
   }
 }
-async function G(e, t, s) {
+async function C(e, t, s) {
   const i = [];
   let r = 0;
   const a = async () => {
@@ -64,19 +64,19 @@ function V(e) {
       for (const [c, n] of Object.entries(r)) {
         const u = (n.sizes && n.sizes.length ? Array.from(n.sizes) : []).map((o) => Number(o)).filter((o) => Number.isFinite(o)), O = (n.weights && n.weights.length ? Array.from(n.weights) : []).map((o) => Number(o)).filter((o) => Number.isFinite(o)), T = (n.fills && n.fills.length ? Array.from(n.fills) : []).map((o) => Number(o)).filter((o) => o === 0 || o === 1), A = n.themes && n.themes.length ? Array.from(n.themes) : [];
         for (const o of w(A)) {
-          await P(y.resolve(i, o));
+          await I(y.resolve(i, o));
           for (const p of w(O))
             for (const v of w(T))
               for (const S of w(u)) {
-                const R = I(p, v), j = L(o, c, R, S), D = y.resolve(i, o, U(c, v, p, S));
+                const R = W(p, v), j = L(o, c, R, S), D = y.resolve(i, o, U(c, v, p, S));
                 a.push({ url: j, file: D });
               }
         }
       }
       let l = 0, f = 0, m = 0;
-      await G(a, t.concurrency, async (c) => {
+      await C(a, t.concurrency, async (c) => {
         try {
-          if (await W(c.file)) {
+          if (await P(c.file)) {
             f++;
             return;
           }
@@ -96,7 +96,7 @@ function V(e) {
     }
   };
 }
-const _ = /* @__PURE__ */ Object.assign({}), C = /* @__PURE__ */ Object.assign({}), F = /* @__PURE__ */ new Map(), d = /* @__PURE__ */ new Map(), $ = /* @__PURE__ */ new Map(), N = "rounded", z = 0, E = 200;
+const G = /* @__PURE__ */ Object.assign({}), _ = /* @__PURE__ */ Object.assign({}), F = /* @__PURE__ */ new Map(), d = /* @__PURE__ */ new Map(), $ = /* @__PURE__ */ new Map(), N = "rounded", z = 0, E = 200;
 function b(e) {
   return `${e.theme}::${e.icon}::${e.fill}::${e.weight}::${e.size}`;
 }
@@ -121,7 +121,7 @@ function x(e) {
   const t = e.match(/viewBox="([^"]+)"/i), s = e.match(/<path[^>]*\sd="([^"]+)"[^>]*>/i);
   return !t || !s ? null : { viewBox: t[1], d: s[1] };
 }
-for (const [e, t] of Object.entries(_)) {
+for (const [e, t] of Object.entries(G)) {
   const s = H(e);
   if (!s) continue;
   const i = x(t);
@@ -161,7 +161,7 @@ function M(e, t) {
 function Q(e) {
   for (const [t, s] of Object.entries(e)) {
     let i;
-    for (const [r, a] of Object.entries(C))
+    for (const [r, a] of Object.entries(_))
       if (r.replace(/\\/g, "/").endsWith(`/${t}.svg`)) {
         i = a;
         break;
@@ -177,8 +177,15 @@ function X(e, t, s, i) {
   for (const r of t)
     M({ icon: e, size: r, ...i }, s(r));
 }
+function Z(e, t) {
+  return {
+    Symbols: e,
+    Custom: t ?? {}
+  };
+}
 export {
   Q as autoRegisterCustom,
+  Z as defineIcons,
   Y as getSymbol,
   V as materialSymbolsSvg,
   X as registerMultipleSizes,

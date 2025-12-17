@@ -3,6 +3,9 @@
 // Belongs to the vite-plugin package
 
 // Local copies of the minimal types to avoid coupling to the Vue package
+export type OpticalSize = 20 | 24 | 40 | 48;
+export type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700;
+export type Fill = boolean;
 export type Theme = 'rounded' | 'outlined' | 'sharp';
 
 export interface SymbolSvg {
@@ -157,3 +160,25 @@ export function registerMultipleSizes(
     registerRawSymbol({ icon, size: s, ...options }, resolveRawSvg(s));
   }
 }
+
+export type IconConfig = {
+  sizes: readonly OpticalSize[];
+  weights?: readonly Weight[];
+  fills?: readonly Fill[];
+  themes?: readonly Theme[];
+};
+
+// defineIcons helper to create strongly typed maps
+// A map of custom icons where each icon may specify any subset of optical sizes
+// Example: { spark: { 24: svg24 }, brand: { 20: svg20, 40: svg40 } }
+export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown>>>>;
+export function defineIcons<
+    S extends Record<string, Partial<IconConfig>>,
+    C extends DefineCustomMap = Record<never, never>
+>(symbols: S, custom?: C) {
+  return {
+    Symbols: symbols,
+    Custom: (custom ?? ({} as C)),
+  } as const;
+}
+
