@@ -2,9 +2,7 @@ export type OpticalSize = 20 | 24 | 40 | 48;
 export type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700;
 export type Fill = boolean;
 export type Theme = 'rounded' | 'outlined' | 'sharp';
-export interface __MaterialSymbolIconIndex {
-}
-export type MaterialSymbolIcon = keyof __MaterialSymbolIconIndex extends string ? keyof __MaterialSymbolIconIndex : string;
+import type { MaterialSymbolIcon } from './icons';
 export interface SymbolSvg {
     d: string;
     viewBox: string;

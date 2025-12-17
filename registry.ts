@@ -8,13 +8,9 @@ export type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700;
 export type Fill = boolean;
 export type Theme = 'rounded' | 'outlined' | 'sharp';
 
-// Typing hook: Consumers (or the plugin's generator) can augment this interface
-// via declaration merging to provide strongly-typed icon names.
-// See: .temp/icons.d.ts which declares a module augmentation for this package.
-export interface __MaterialSymbolIconIndex {}
-export type MaterialSymbolIcon = keyof __MaterialSymbolIconIndex extends string
-  ? keyof __MaterialSymbolIconIndex
-  : string;
+// Strongly-typed icon names come from generated ./icons.d.ts (overwritten in dev)
+// Ship placeholder: export type MaterialSymbolIcon = string;
+import type { MaterialSymbolIcon } from './icons';
 
 export interface SymbolSvg {
   d: string;
