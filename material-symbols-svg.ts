@@ -89,8 +89,20 @@ async function withConcurrency<T, R>(items: T[], limit: number, worker: (item: T
 }
 
 export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): Plugin {
+  // Default to a temp directory inside the installed package under node_modules
+  // Avoid importing from 'node:url' (fileURLToPath) to keep bundling simple.
+  const pkgDirFromMetaUrl = (() => {
+    const u = new URL('.', import.meta.url);
+    let p = decodeURIComponent(u.pathname);
+    // On Windows, URL pathname starts with a leading slash, strip it (e.g., /C:/...)
+    if (process.platform === 'win32' && p.startsWith('/')) p = p.slice(1);
+    return p;
+  })();
+  const DEFAULT_TEMP_DIR = path.resolve(pkgDirFromMetaUrl, '.temp');
+  const DEFAULT_SYMBOLS_DIR = path.resolve(DEFAULT_TEMP_DIR, 'symbols');
+
   const options = {
-    outDir: opts.outDir ?? 'src/shared/icons/symbols',
+    outDir: opts.outDir ?? DEFAULT_SYMBOLS_DIR,
     concurrency: opts.concurrency ?? 8,
     strict: opts.strict ?? false,
     enabled: opts.enabled ?? true,
@@ -110,7 +122,9 @@ export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): 
     async buildStart(this: PluginContext) {
       if (!options.enabled) return;
 
-      const outBase = path.resolve(root, options.outDir);
+      const outBase = path.isAbsolute(options.outDir)
+        ? options.outDir
+        : path.resolve(root, options.outDir);
       const iconsMap = opts.icons as SymbolsIconsMap;
       const tasks: { url: string; file: string }[] = [];
 

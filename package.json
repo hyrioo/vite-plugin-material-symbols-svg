@@ -3,23 +3,17 @@
   "version": "0.1.0",
   "description": "Vite plugin and registry for Material Symbols SVG icons",
   "type": "module",
-  "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
-    "download-symbols.mjs",
-    "versions.mjs",
     "README.md"
   ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    },
-    "./download-symbols.mjs": "./download-symbols.mjs",
-    "./versions.mjs": "./versions.mjs"
+      "import": "./dist/index.js"
+    }
   },
   "engines": {
     "node": ">=18"
