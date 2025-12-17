@@ -27,9 +27,17 @@ type Theme = 'rounded' | 'outlined' | 'sharp';
 export type SymbolsIconsMap = Record<string, {
     sizes?: readonly number[];
     weights?: readonly number[];
-    fills?: readonly boolean[];
+    // Accept booleans or numeric literals; normalize later to 0|1
+    fills?: readonly (boolean | 0 | 1)[];
     themes?: readonly ('rounded' | 'outlined' | 'sharp')[]
 }>;
+
+const IconDefaultConfig = {
+    sizes: [20,24,40,48] as const,
+    weights: [400] as const,
+    fills: [0] as const,
+    themes: ['rounded'] as const,
+}
 
 export interface MaterialSymbolsPluginOptions {
     icons: SymbolsIconsMap;          // required — pass the exported Icons object directly
@@ -98,6 +106,34 @@ async function withConcurrency<T, R>(items: T[], limit: number, worker: (item: T
     return ret;
 }
 
+// Normalize helpers to keep typing strict and avoid Array.from overload issues
+function normalizeNums(input: readonly unknown[] | undefined, fallback: readonly number[]): number[] {
+    const src = input && input.length ? input : fallback;
+    return unique(Array.from(src as readonly unknown[])
+        .map((n) => Number(n))
+        .filter((n) => Number.isFinite(n))) as number[];
+}
+
+function normalizeFills(input: readonly (boolean | 0 | 1)[] | undefined, fallback: readonly (0 | 1)[]): (0 | 1)[] {
+    const src = input && input.length ? input : fallback;
+    const arr = Array.from(src).map((v) => {
+        if (v === true) return 1;
+        if (v === false) return 0;
+        const n = Number(v);
+        return n === 1 ? 1 : 0;
+    }) as (0 | 1)[];
+    return unique(arr) as (0 | 1)[];
+}
+
+function normalizeThemes(input: readonly unknown[] | undefined, fallback: readonly Theme[]): Theme[] {
+    const src = input && input.length ? input : fallback;
+    const allowed: Theme[] = ['rounded', 'outlined', 'sharp'];
+    const arr = Array.from(src as readonly unknown[])
+        .map((t) => String(t) as Theme)
+        .filter((t): t is Theme => allowed.includes(t));
+    return unique(arr);
+}
+
 export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): Plugin {
     const options = {
         concurrency: opts.concurrency ?? 8,
@@ -128,14 +164,42 @@ export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): 
                 '.temp',
                 'symbols',
             );
+
+            // Ensure temp base exists and prefetch metadata when starting dev server
+            try {
+                await ensureDir(path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', '.temp'));
+            } catch {}
+
+            // Prefetch metadata (versions.json) on dev server start
+            const versionsFile = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', '.temp', 'versions.json');
+            try {
+                // Only fetch if file missing
+                if (!(await exists(versionsFile))) {
+                    const metaUrl = 'https://fonts.gstatic.com/s/i/materialicons/metadata.json';
+                    const res = await fetch(metaUrl);
+                    if (res.ok) {
+                        const txt = await res.text();
+                        await fs.writeFile(versionsFile, txt);
+                    } else if (options.strict) {
+                        this.error(`[material-symbols-svg] Failed to fetch metadata: HTTP ${res.status}`);
+                    } else {
+                        this.warn(`[material-symbols-svg] Failed to fetch metadata: HTTP ${res.status}`);
+                    }
+                }
+            } catch (e) {
+                const msg = e instanceof Error ? e.message : String(e);
+                if (options.strict) this.error(`[material-symbols-svg] Metadata prefetch failed: ${msg}`); else this.warn(`[material-symbols-svg] Metadata prefetch failed: ${msg}`);
+            }
+
             const iconsMap = opts.icons as SymbolsIconsMap;
             const tasks: {url: string; file: string}[] = [];
 
             for (const [icon, meta] of Object.entries(iconsMap)) {
-                const sizes = (meta.sizes && meta.sizes.length ? Array.from(meta.sizes) : []).map((n) => Number(n)).filter((n) => Number.isFinite(n));
-                const weights = (meta.weights && meta.weights.length ? Array.from(meta.weights) : []).map((n) => Number(n)).filter((n) => Number.isFinite(n));
-                const fills = (meta.fills && meta.fills.length ? Array.from(meta.fills) : []).map((n) => Number(n)).filter((n): n is 0 | 1 => n === 0 || n === 1);
-                const themes = (meta.themes && meta.themes.length ? Array.from(meta.themes) : []) as Theme[];
+                // Merge with defaults using normalization helpers
+                const sizes = normalizeNums(meta.sizes as unknown as readonly unknown[] | undefined, IconDefaultConfig.sizes);
+                const weights = normalizeNums(meta.weights as unknown as readonly unknown[] | undefined, IconDefaultConfig.weights);
+                const fills = normalizeFills(meta.fills, IconDefaultConfig.fills);
+                const themes = normalizeThemes(meta.themes as unknown as readonly unknown[] | undefined, IconDefaultConfig.themes);
 
                 for (const theme of unique(themes)) {
                     await ensureDir(path.resolve(outBase, theme));
