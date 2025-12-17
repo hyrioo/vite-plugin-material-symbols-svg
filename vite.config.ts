@@ -13,7 +13,9 @@ export default defineConfig({
         'vite',
         // Node built-ins that might be referenced by plugin utilities
         'node:fs',
+        'node:fs/promises',
         'node:path',
+        'node:url',
         'fs',
         'path',
       ],

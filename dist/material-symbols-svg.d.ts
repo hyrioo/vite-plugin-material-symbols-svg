@@ -7,7 +7,6 @@ export type SymbolsIconsMap = Record<string, {
 }>;
 export interface MaterialSymbolsPluginOptions {
     icons: SymbolsIconsMap;
-    outDir?: string;
     concurrency?: number;
     strict?: boolean;
     enabled?: boolean;
