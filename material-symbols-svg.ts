@@ -33,11 +33,11 @@ export type SymbolsIconsMap = Record<string, {
 }>;
 
 const IconDefaultConfig = {
-    sizes: [20,24,40,48] as const,
+    sizes: [20, 24, 40, 48] as const,
     weights: [400] as const,
     fills: [0] as const,
     themes: ['rounded'] as const,
-}
+};
 
 export interface MaterialSymbolsPluginOptions {
     icons: SymbolsIconsMap;          // required — pass the exported Icons object directly
@@ -168,17 +168,24 @@ export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): 
             // Ensure temp base exists and prefetch metadata when starting dev server
             try {
                 await ensureDir(path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', '.temp'));
-            } catch {}
+            } catch {
+            }
 
             // Prefetch metadata (versions.json) on dev server start
             const versionsFile = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', '.temp', 'versions.json');
             try {
                 // Only fetch if file missing
                 if (!(await exists(versionsFile))) {
-                    const metaUrl = 'https://fonts.gstatic.com/s/i/materialicons/metadata.json';
+                    // Use the correct Material Symbols metadata endpoint; strip XSSI prefix
+                    const metaUrl = 'https://fonts.google.com/metadata/icons?key=material_symbols&incomplete=true';
                     const res = await fetch(metaUrl);
                     if (res.ok) {
-                        const txt = await res.text();
+                        let txt = await res.text();
+                        // The response starts with an XSSI guard like ")]}'" followed by a newline; remove the first line
+                        if (txt.startsWith(")]}\'")) {
+                            const i = txt.indexOf('\n');
+                            if (i !== -1) txt = txt.substring(i + 1);
+                        }
                         await fs.writeFile(versionsFile, txt);
                     } else if (options.strict) {
                         this.error(`[material-symbols-svg] Failed to fetch metadata: HTTP ${res.status}`);
