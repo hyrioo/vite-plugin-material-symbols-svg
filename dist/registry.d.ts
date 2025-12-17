@@ -2,6 +2,9 @@ export type OpticalSize = 20 | 24 | 40 | 48;
 export type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700;
 export type Fill = boolean;
 export type Theme = 'rounded' | 'outlined' | 'sharp';
+export interface __MaterialSymbolIconIndex {
+}
+export type MaterialSymbolIcon = keyof __MaterialSymbolIconIndex extends string ? keyof __MaterialSymbolIconIndex : string;
 export interface SymbolSvg {
     d: string;
     viewBox: string;
@@ -35,7 +38,7 @@ export type IconConfig = {
     themes?: readonly Theme[];
 };
 export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown>>>>;
-export declare function defineIcons<S extends Record<string, Partial<IconConfig>>, C extends DefineCustomMap = Record<never, never>>(symbols: S, custom?: C): {
+export declare function defineIcons<S extends Partial<Record<MaterialSymbolIcon, Partial<IconConfig>>>, C extends DefineCustomMap = Record<never, never>>(symbols: S, custom?: C): {
     readonly Symbols: S;
     readonly Custom: C;
 };
