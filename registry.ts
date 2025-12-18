@@ -11,6 +11,7 @@ export type Theme = 'rounded' | 'outlined' | 'sharp';
 // Strongly-typed icon names come from generated ./icons.d.ts (overwritten in dev)
 // Ship placeholder: export type MaterialSymbolIcon = string;
 import type { MaterialSymbolIcon } from './icons';
+import symbolMap from './registry-map';
 
 export interface SymbolSvg {
   d: string;
@@ -26,10 +27,7 @@ export interface SymbolKey {
 }
 
 // Eagerly load all Symbols SVGs as raw strings at build time
-const symbolFiles = import.meta.glob('/symbols/**/**/*.svg', {
-  as: 'raw',
-  eager: true,
-}) as Record<string, string>;
+const symbolFiles = (symbolMap || {}) as Record<string, string>;
 
 // Also load raw custom icons from the custom folder
 const customFiles = import.meta.glob('/custom/**/*.svg', {
@@ -51,8 +49,8 @@ function keyOf(k: SymbolKey): string {
 }
 
 function parseFilename(filePath: string): SymbolKey | null {
-  // Example: /.../symbols/rounded/folder.w200.s24.svg or folder-fill.w200.s24.svg
-  const m = filePath.replace(/\\/g, '/').match(/symbols\/(rounded|outlined|sharp)\/([^/]+)\.svg$/);
+  // Example: rounded/folder.w200.s24.svg or folder-fill.w200.s24.svg
+  const m = filePath.replace(/\\/g, '/').match(/(rounded|outlined|sharp)\/([^/]+)\.svg$/);
   if (!m) return null;
   const theme = m[1] as Theme;
   const filename = m[2];
@@ -147,7 +145,7 @@ export function autoRegisterCustom(map: Record<string, Readonly<Record<number, u
         continue;
       }
 
-      // If the value is a string path, try to find it in customFiles glob
+      // If the value is a string path, try to find it in symbolMap (generated) or customFiles glob
       // The path in defineIcons is relative to the config file (e.g. './custom/spark.svg')
       // but in Vite's import.meta.glob, it's usually relative to the root or absolute.
       let raw: string | undefined;
@@ -155,16 +153,24 @@ export function autoRegisterCustom(map: Record<string, Readonly<Record<number, u
       if (typeof value === 'string' && value.endsWith('.svg')) {
         const normalizedValue = value.replace(/\\/g, '/');
         const fileName = normalizedValue.split('/').pop();
-        
-        // Try exact match in glob first (if the glob path ends with the given string)
-        for (const [p, content] of Object.entries(customFiles)) {
-          if (p.replace(/\\/g, '/').endsWith(normalizedValue.startsWith('./') ? normalizedValue.slice(2) : normalizedValue)) {
-            raw = content;
-            break;
+
+        // 1. Try to find in symbolMap (generated from relative paths in defineIcons)
+        const mapKey = `custom/${iconName}/${sizeKey}`;
+        if (symbolFiles[mapKey]) {
+          raw = symbolFiles[mapKey];
+        }
+
+        // 2. Try exact match in glob (legacy / broad match)
+        if (!raw) {
+          for (const [p, content] of Object.entries(customFiles)) {
+            if (p.replace(/\\/g, '/').endsWith(normalizedValue.startsWith('./') ? normalizedValue.slice(2) : normalizedValue)) {
+              raw = content;
+              break;
+            }
           }
         }
 
-        // Fallback to matching by filename if path not found
+        // 3. Fallback to matching by filename if path not found
         if (!raw && fileName) {
           for (const [p, content] of Object.entries(customFiles)) {
             if (p.replace(/\\/g, '/').endsWith(`/${fileName}`)) {
