@@ -1,5 +1,6 @@
 import F from "node:path";
 import m from "node:fs/promises";
+import Y from "./registry-map";
 const j = {
   sizes: [20, 24, 40, 48],
   weights: [400],
@@ -19,25 +20,25 @@ async function U(t) {
     return !1;
   }
 }
-function Y(t, s) {
+function Q(t, s) {
   const e = t === 400 ? "" : `wght${t}`, r = s === 0 ? "" : `fill${s}`, a = `${e}${r}`;
   return a.length ? a : "default";
 }
-function Q(t, s, e, r) {
+function X(t, s, e, r) {
   return `https://fonts.gstatic.com/s/i/short-term/release/materialsymbols${t || ""}/${s}/${e}/${r}px.svg`;
 }
 function L(t, s, e, r) {
   const a = Number.isFinite(e) ? `.w${e}` : "", f = Number.isFinite(r) ? `.s${r}` : "";
   return `${t}${s === 1 ? "-fill" : ""}${a}${f}.svg`;
 }
-async function X(t) {
+async function Z(t) {
   try {
     const s = await m.readFile(t, "utf8");
     s.startsWith("<svg") && s.includes("</svg>") || await m.rm(t, { force: !0 });
   } catch {
   }
 }
-async function Z(t, s, e) {
+async function tt(t, s, e) {
   const r = [];
   let a = 0;
   const f = async () => {
@@ -60,7 +61,7 @@ function R(t, s) {
   const e = t && t.length ? t : s, r = ["rounded", "outlined", "sharp"], a = Array.from(e).map((f) => String(f)).filter((f) => r.includes(f));
   return S(a);
 }
-function ct(t, s = {}) {
+function mt(t, s = {}) {
   const e = {
     concurrency: s.concurrency ?? 8,
     strict: s.strict ?? !1,
@@ -250,13 +251,13 @@ ${l.join(`
           for (const c of S(u))
             for (const n of S(w))
               for (const g of S(l)) {
-                const $ = Y(c, n), v = Q(p, o, $, g), h = F.resolve(a, p, L(o, n, c, g));
+                const $ = Q(c, n), v = X(p, o, $, g), h = F.resolve(a, p, L(o, n, c, g));
                 T.push({ url: v, file: h });
               }
         }
       }
       let M = 0, D = 0, P = 0;
-      await Z(T, e.concurrency, async (o) => {
+      await tt(T, e.concurrency, async (o) => {
         try {
           if (await U(o.file)) {
             D++;
@@ -266,7 +267,7 @@ ${l.join(`
           if (!i.ok) throw new Error(`HTTP ${i.status}`);
           const l = await i.text();
           if (!l.startsWith("<svg")) throw new Error("Not an SVG");
-          await m.writeFile(o.file, l), await X(o.file), P++;
+          await m.writeFile(o.file, l), await Z(o.file), P++;
         } catch (i) {
           M++;
           const l = i instanceof Error ? i.message : String(i);
@@ -278,7 +279,7 @@ ${l.join(`
     }
   };
 }
-const tt = {}, et = tt || {}, B = /* @__PURE__ */ new Map(), st = "rounded", it = 0, rt = 200;
+const et = Y || {}, B = /* @__PURE__ */ new Map(), st = "rounded", it = 0, rt = 200;
 function J(t) {
   return `${t.theme}::${t.icon}::${t.fill}::${t.weight}::${t.size}`;
 }
@@ -322,10 +323,10 @@ for (const [t, s] of Object.entries(et)) {
   const r = nt(s);
   r && B.set(J(e), r);
 }
-function mt(t) {
+function ft(t) {
   return B.get(J(t));
 }
-function ft(t, s, e) {
+function ut(t, s, e) {
   return {
     Symbols: t,
     Custom: s ?? {},
@@ -333,9 +334,9 @@ function ft(t, s, e) {
   };
 }
 export {
-  ct as default,
-  ft as defineIcons,
-  mt as getSymbol,
-  ct as materialSymbolsSvg
+  mt as default,
+  ut as defineIcons,
+  ft as getSymbol,
+  mt as materialSymbolsSvg
 };
 //# sourceMappingURL=index.js.map
