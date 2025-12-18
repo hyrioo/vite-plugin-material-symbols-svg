@@ -1,14 +1,14 @@
 import type { Plugin } from 'vite';
 import type { IconConfig } from './registry';
 export type IconsInput = {
-    readonly Symbols: Record<string, {
-        readonly sizes?: readonly number[];
-        readonly weights?: readonly number[];
-        readonly fills?: readonly (boolean | 0 | 1)[];
-        readonly themes?: readonly ('rounded' | 'outlined' | 'sharp')[];
+    Symbols: Record<string, {
+        sizes?: readonly number[];
+        weights?: readonly number[];
+        fills?: readonly (boolean | 0 | 1)[];
+        themes?: readonly ('rounded' | 'outlined' | 'sharp')[];
     }>;
-    readonly Custom?: Record<string, Partial<Readonly<Record<number, unknown>>>>;
-    readonly Default?: Partial<IconConfig>;
+    Custom?: Record<string, Partial<Readonly<Record<number, unknown>>>>;
+    Default?: Partial<IconConfig>;
 };
 export interface MaterialSymbolsPluginOptions {
     concurrency?: number;
@@ -16,4 +16,4 @@ export interface MaterialSymbolsPluginOptions {
     enabled?: boolean;
     cleanRemoved?: boolean;
 }
-export default function materialSymbolsSvg(iconsDefOrPath: IconsInput | string, opts?: MaterialSymbolsPluginOptions): Plugin;
+export default function materialSymbolsSvg(iconsDef: IconsInput, opts?: MaterialSymbolsPluginOptions): Plugin;
