@@ -1,66 +1,66 @@
-import b from "node:path";
-import f from "node:fs/promises";
-const E = {
+import p from "node:path";
+import l from "node:fs/promises";
+const T = {
   sizes: [20, 24, 40, 48],
   weights: [400],
   fills: [0],
   themes: ["rounded"]
 };
-function p(e) {
+function F(e) {
   return Array.from(new Set(e));
 }
-async function P(e) {
-  await f.mkdir(e, { recursive: !0 });
-}
 async function R(e) {
+  await l.mkdir(e, { recursive: !0 });
+}
+async function U(e) {
   try {
-    return await f.access(e), !0;
+    return await l.access(e), !0;
   } catch {
     return !1;
   }
 }
-function K(e, t) {
-  const s = e === 400 ? "" : `wght${e}`, i = t === 0 ? "" : `fill${t}`, r = `${s}${i}`;
-  return r.length ? r : "default";
-}
-function J(e, t, s, i) {
-  return `https://fonts.gstatic.com/s/i/short-term/release/materialsymbols${e || ""}/${t}/${s}/${i}px.svg`;
+function J(e, t) {
+  const s = e === 400 ? "" : `wght${e}`, i = t === 0 ? "" : `fill${t}`, n = `${s}${i}`;
+  return n.length ? n : "default";
 }
 function V(e, t, s, i) {
-  const r = Number.isFinite(s) ? `.w${s}` : "", l = Number.isFinite(i) ? `.s${i}` : "";
-  return `${e}${t === 1 ? "-fill" : ""}${r}${l}.svg`;
+  return `https://fonts.gstatic.com/s/i/short-term/release/materialsymbols${e || ""}/${t}/${s}/${i}px.svg`;
 }
-async function Y(e) {
+function Y(e, t, s, i) {
+  const n = Number.isFinite(s) ? `.w${s}` : "", c = Number.isFinite(i) ? `.s${i}` : "";
+  return `${e}${t === 1 ? "-fill" : ""}${n}${c}.svg`;
+}
+async function q(e) {
   try {
-    const t = await f.readFile(e, "utf8");
-    t.startsWith("<svg") && t.includes("</svg>") || await f.rm(e, { force: !0 });
+    const t = await l.readFile(e, "utf8");
+    t.startsWith("<svg") && t.includes("</svg>") || await l.rm(e, { force: !0 });
   } catch {
   }
 }
-async function q(e, t, s) {
+async function Q(e, t, s) {
   const i = [];
-  let r = 0;
-  const l = async () => {
-    for (; r < e.length; ) {
-      const m = r++;
-      i[m] = await s(e[m], m);
+  let n = 0;
+  const c = async () => {
+    for (; n < e.length; ) {
+      const u = n++;
+      i[u] = await s(e[u], u);
     }
-  }, w = Array.from({ length: Math.min(t, e.length) }, l);
-  return await Promise.all(w), i;
+  }, h = Array.from({ length: Math.min(t, e.length) }, c);
+  return await Promise.all(h), i;
 }
-function U(e, t) {
+function W(e, t) {
   const s = e && e.length ? e : t;
-  return p(Array.from(s).map((i) => Number(i)).filter((i) => Number.isFinite(i)));
-}
-function Q(e, t) {
-  const s = e && e.length ? e : t, i = Array.from(s).map((r) => r === !0 ? 1 : r === !1 ? 0 : Number(r) === 1 ? 1 : 0);
-  return p(i);
+  return F(Array.from(s).map((i) => Number(i)).filter((i) => Number.isFinite(i)));
 }
 function X(e, t) {
-  const s = e && e.length ? e : t, i = ["rounded", "outlined", "sharp"], r = Array.from(s).map((l) => String(l)).filter((l) => i.includes(l));
-  return p(r);
+  const s = e && e.length ? e : t, i = Array.from(s).map((n) => n === !0 ? 1 : n === !1 ? 0 : Number(n) === 1 ? 1 : 0);
+  return F(i);
 }
-function ne(e, t = {}) {
+function Z(e, t) {
+  const s = e && e.length ? e : t, i = ["rounded", "outlined", "sharp"], n = Array.from(s).map((c) => String(c)).filter((c) => i.includes(c));
+  return F(n);
+}
+function oe(e, t = {}) {
   const s = {
     concurrency: t.concurrency ?? 8,
     strict: t.strict ?? !1,
@@ -72,12 +72,12 @@ function ne(e, t = {}) {
   let i = "";
   return {
     name: "material-symbols-svg",
-    configResolved(r) {
-      i = r.root || process.cwd();
+    configResolved(n) {
+      i = n.root || process.cwd();
     },
     async buildStart() {
       if (!s.enabled) return;
-      const r = b.resolve(
+      const n = p.resolve(
         i,
         "node_modules",
         "@hyrioo",
@@ -86,193 +86,220 @@ function ne(e, t = {}) {
         "symbols"
       );
       try {
-        await P(b.resolve(i, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", ".temp"));
+        await R(p.resolve(i, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", ".temp"));
       } catch {
       }
-      const l = b.resolve(i, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", ".temp"), w = b.resolve(l, "versions.json"), m = b.resolve(i, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dist"), N = b.resolve(m, "icons.d.ts"), O = b.resolve(m, "registry-types.d.ts");
+      const c = p.resolve(i, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", ".temp"), h = p.resolve(c, "versions.json"), u = p.resolve(i, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dist"), z = p.resolve(u, "icons.d.ts"), N = p.resolve(u, "registry-types.d.ts");
       try {
-        if (!await R(w)) {
-          const n = await fetch("https://fonts.google.com/metadata/icons?key=material_symbols&incomplete=true");
-          if (n.ok) {
-            let c = await n.text();
-            if (c.startsWith(")]}'")) {
-              const y = c.indexOf(`
+        if (!await U(h)) {
+          const r = await fetch("https://fonts.google.com/metadata/icons?key=material_symbols&incomplete=true");
+          if (r.ok) {
+            let m = await r.text();
+            if (m.startsWith(")]}'")) {
+              const w = m.indexOf(`
 `);
-              y !== -1 && (c = c.substring(y + 1));
+              w !== -1 && (m = m.substring(w + 1));
             }
-            let g;
+            let d;
             try {
-              g = JSON.parse(c);
+              d = JSON.parse(m);
             } catch {
-              s.strict ? this.error("[material-symbols-svg] Failed to parse metadata JSON") : this.warn("[material-symbols-svg] Failed to parse metadata JSON"), g = null;
+              s.strict ? this.error("[material-symbols-svg] Failed to parse metadata JSON") : this.warn("[material-symbols-svg] Failed to parse metadata JSON"), d = null;
             }
-            if (g && Array.isArray(g.icons)) {
-              const y = {};
-              for (const o of g.icons) {
-                const h = o && o.unsupported_families, F = Array.isArray(h) ? h : [];
-                let v = !1;
-                for (const z of F)
-                  if (String(z).toLowerCase().includes("symbols")) {
-                    v = !0;
+            if (d && Array.isArray(d.icons)) {
+              const w = {};
+              for (const a of d.icons) {
+                const b = a && a.unsupported_families, E = Array.isArray(b) ? b : [];
+                let S = !1;
+                for (const O of E)
+                  if (String(O).toLowerCase().includes("symbols")) {
+                    S = !0;
                     break;
                   }
-                if (v) continue;
-                const d = String((o == null ? void 0 : o.name) || "");
-                d && (y[d] = o == null ? void 0 : o.version);
+                if (S) continue;
+                const f = String((a == null ? void 0 : a.name) || "");
+                f && (w[f] = a == null ? void 0 : a.version);
               }
-              const S = Object.fromEntries(Object.entries(y).sort((o, h) => o[0].localeCompare(h[0])));
-              await f.writeFile(w, JSON.stringify(S, null, 2));
+              const $ = Object.fromEntries(Object.entries(w).sort((a, b) => a[0].localeCompare(b[0]))), v = JSON.stringify($, null, 2);
+              let g = "";
               try {
-                const v = `// This file is auto-generated by vite-plugin-material-symbols-svg
+                g = await l.readFile(h, "utf-8");
+              } catch {
+              }
+              g !== v && await l.writeFile(h, v);
+              try {
+                const S = `// This file is auto-generated by vite-plugin-material-symbols-svg
 // Do not edit manually.
-export type MaterialSymbolIcon = ${Object.keys(S).map((d) => `'${d.replace(/'/g, "\\'")}'`).join(" | ")};
+export type MaterialSymbolIcon = ${Object.keys($).map((f) => `'${f.replace(/'/g, "\\'")}'`).join(" | ")};
 `;
                 try {
-                  await f.mkdir(m, { recursive: !0 }), await f.writeFile(N, v);
-                } catch (d) {
-                  const z = d instanceof Error ? d.message : String(d);
-                  this.warn(`[material-symbols-svg] Failed to overwrite dist/icons.d.ts: ${z}`);
+                  await l.mkdir(u, { recursive: !0 });
+                  let f = "";
+                  try {
+                    f = await l.readFile(z, "utf-8");
+                  } catch {
+                  }
+                  if (f !== S) {
+                    await l.writeFile(z, S);
+                    const O = /* @__PURE__ */ new Date();
+                    await l.utimes(z, O, O).catch(() => {
+                    });
+                  }
+                } catch (f) {
+                  const O = f instanceof Error ? f.message : String(f);
+                  this.warn(`[material-symbols-svg] Failed to overwrite dist/icons.d.ts: ${O}`);
                 }
-              } catch (o) {
-                const h = o instanceof Error ? o.message : String(o);
-                this.warn(`[material-symbols-svg] Failed to write icons.d.ts: ${h}`);
+              } catch (a) {
+                const b = a instanceof Error ? a.message : String(a);
+                this.warn(`[material-symbols-svg] Failed to write icons.d.ts: ${b}`);
               }
             } else
-              await f.writeFile(w, c);
-          } else s.strict ? this.error(`[material-symbols-svg] Failed to fetch metadata: HTTP ${n.status}`) : this.warn(`[material-symbols-svg] Failed to fetch metadata: HTTP ${n.status}`);
+              await l.writeFile(h, m);
+          } else s.strict ? this.error(`[material-symbols-svg] Failed to fetch metadata: HTTP ${r.status}`) : this.warn(`[material-symbols-svg] Failed to fetch metadata: HTTP ${r.status}`);
         }
         try {
-          const a = `// This file is auto-generated by vite-plugin-material-symbols-svg
+          const o = `// This file is auto-generated by vite-plugin-material-symbols-svg
 // Do not edit manually.
-`, n = Object.keys(e.Symbols || {}), c = Object.keys(e.Custom || {}), g = Array.from(/* @__PURE__ */ new Set([...n, ...c])), y = g.length ? g.map((o) => `'${o.replace(/'/g, "\\'")}'`).join(" | ") : "string", S = `${a}export type IconKey = ${y};
+`, r = Object.keys(e.Symbols || {}), m = Object.keys(e.Custom || {}), d = Array.from(/* @__PURE__ */ new Set([...r, ...m])), w = d.length ? d.map((g) => `'${g.replace(/'/g, "\\'")}'`).join(" | ") : "string", $ = `${o}export type IconKey = ${w};
 `;
-          await f.mkdir(m, { recursive: !0 }), await f.writeFile(O, S);
-        } catch (a) {
-          const n = a instanceof Error ? a.message : String(a);
-          this.warn(`[material-symbols-svg] Failed to write dist/registry-types.d.ts: ${n}`);
+          await l.mkdir(u, { recursive: !0 });
+          let v = "";
+          try {
+            v = await l.readFile(N, "utf-8");
+          } catch {
+          }
+          if (v !== $) {
+            await l.writeFile(N, $);
+            const g = /* @__PURE__ */ new Date();
+            await l.utimes(N, g, g).catch(() => {
+            });
+          }
+        } catch (o) {
+          const r = o instanceof Error ? o.message : String(o);
+          this.warn(`[material-symbols-svg] Failed to write dist/registry-types.d.ts: ${r}`);
         }
-      } catch (a) {
-        const n = a instanceof Error ? a.message : String(a);
-        s.strict ? this.error(`[material-symbols-svg] Metadata prefetch failed: ${n}`) : this.warn(`[material-symbols-svg] Metadata prefetch failed: ${n}`);
+      } catch (o) {
+        const r = o instanceof Error ? o.message : String(o);
+        s.strict ? this.error(`[material-symbols-svg] Metadata prefetch failed: ${r}`) : this.warn(`[material-symbols-svg] Metadata prefetch failed: ${r}`);
       }
-      const $ = e.Symbols, u = e.Default ?? {}, A = [];
-      for (const [a, n] of Object.entries($)) {
-        const c = U(n.sizes ?? u.sizes, E.sizes), g = U(n.weights ?? u.weights, E.weights), y = Q(n.fills ?? u.fills, E.fills), S = X(n.themes ?? u.themes, E.themes);
-        for (const o of p(S)) {
-          await P(b.resolve(r, o));
-          for (const h of p(g))
-            for (const F of p(y))
-              for (const v of p(c)) {
-                const d = K(h, F), z = J(o, a, d, v), H = b.resolve(r, o, V(a, F, h, v));
-                A.push({ url: z, file: H });
+      const x = e.Symbols, y = e.Default ?? {}, _ = [];
+      for (const [o, r] of Object.entries(x)) {
+        const m = W(r.sizes ?? y.sizes, T.sizes), d = W(r.weights ?? y.weights, T.weights), w = X(r.fills ?? y.fills, T.fills), $ = Z(r.themes ?? y.themes, T.themes);
+        for (const v of F($)) {
+          await R(p.resolve(n, v));
+          for (const g of F(d))
+            for (const a of F(w))
+              for (const b of F(m)) {
+                const E = J(g, a), S = V(v, o, E, b), f = p.resolve(n, v, Y(o, a, g, b));
+                _.push({ url: S, file: f });
               }
         }
       }
-      let x = 0, I = 0, _ = 0;
-      await q(A, s.concurrency, async (a) => {
+      let M = 0, C = 0, D = 0;
+      await Q(_, s.concurrency, async (o) => {
         try {
-          if (await R(a.file)) {
-            I++;
+          if (await U(o.file)) {
+            C++;
             return;
           }
-          const n = await fetch(a.url);
-          if (!n.ok) throw new Error(`HTTP ${n.status}`);
-          const c = await n.text();
-          if (!c.startsWith("<svg")) throw new Error("Not an SVG");
-          await f.writeFile(a.file, c), await Y(a.file), _++;
-        } catch (n) {
-          x++;
-          const c = n instanceof Error ? n.message : String(n);
-          this.warn(`[material-symbols-svg] Failed ${a.url} -> ${a.file}: ${c}`);
+          const r = await fetch(o.url);
+          if (!r.ok) throw new Error(`HTTP ${r.status}`);
+          const m = await r.text();
+          if (!m.startsWith("<svg")) throw new Error("Not an SVG");
+          await l.writeFile(o.file, m), await q(o.file), D++;
+        } catch (r) {
+          M++;
+          const m = r instanceof Error ? r.message : String(r);
+          this.warn(`[material-symbols-svg] Failed ${o.url} -> ${o.file}: ${m}`);
         }
       });
-      const C = `[material-symbols-svg] Done. Saved: ${_}, Skipped: ${I}, Failed: ${x}`;
-      x > 0 && s.strict ? this.error(C) : this.info(C);
+      const P = `[material-symbols-svg] Done. Saved: ${D}, Skipped: ${C}, Failed: ${M}`;
+      M > 0 && s.strict ? this.error(P) : this.info(P);
     }
   };
 }
-const Z = /* @__PURE__ */ Object.assign({}), ee = /* @__PURE__ */ Object.assign({}), D = /* @__PURE__ */ new Map(), j = /* @__PURE__ */ new Map(), M = /* @__PURE__ */ new Map(), W = "rounded", k = 0, L = 200;
-function T(e) {
+const ee = /* @__PURE__ */ Object.assign({}), te = /* @__PURE__ */ Object.assign({}), k = /* @__PURE__ */ new Map(), A = /* @__PURE__ */ new Map(), I = /* @__PURE__ */ new Map(), L = "rounded", B = 0, G = 200;
+function j(e) {
   return `${e.theme}::${e.icon}::${e.fill}::${e.weight}::${e.size}`;
 }
-function te(e) {
+function se(e) {
   const t = e.replace(/\\/g, "/").match(/symbols\/(rounded|outlined|sharp)\/([^/]+)\.svg$/);
   if (!t) return null;
-  const s = t[1], i = t[2], [r, ...l] = i.split(".");
-  let w = r, m = 0;
-  r.endsWith("-fill") && (w = r.slice(0, -5), m = 1);
-  let N = 400, O = 24;
-  for (const $ of l)
-    if ($.startsWith("w")) {
-      const u = Number($.slice(1));
-      Number.isFinite(u) && (N = u);
-    } else if ($.startsWith("s")) {
-      const u = Number($.slice(1));
-      Number.isFinite(u) && (O = u);
+  const s = t[1], i = t[2], [n, ...c] = i.split(".");
+  let h = n, u = 0;
+  n.endsWith("-fill") && (h = n.slice(0, -5), u = 1);
+  let z = 400, N = 24;
+  for (const x of c)
+    if (x.startsWith("w")) {
+      const y = Number(x.slice(1));
+      Number.isFinite(y) && (z = y);
+    } else if (x.startsWith("s")) {
+      const y = Number(x.slice(1));
+      Number.isFinite(y) && (N = y);
     }
-  return { theme: s, icon: w, fill: m, weight: N, size: O };
+  return { theme: s, icon: h, fill: u, weight: z, size: N };
 }
-function B(e) {
+function H(e) {
   const t = e.match(/viewBox="([^"]+)"/i), s = e.match(/<path[^>]*\sd="([^"]+)"[^>]*>/i);
   return !t || !s ? null : { viewBox: t[1], d: s[1] };
 }
-for (const [e, t] of Object.entries(Z)) {
-  const s = te(e);
+for (const [e, t] of Object.entries(ee)) {
+  const s = se(e);
   if (!s) continue;
-  const i = B(t);
-  i && D.set(T(s), i);
+  const i = H(t);
+  i && k.set(j(s), i);
 }
-function oe(e) {
-  const t = T(e), s = j.get(t);
+function ae(e) {
+  const t = j(e), s = A.get(t);
   if (s) return s;
-  const i = `${e.icon}::${e.size}`, r = M.get(i);
-  return r || D.get(t);
+  const i = `${e.icon}::${e.size}`, n = I.get(i);
+  return n || k.get(t);
 }
-function se(e, t) {
+function ie(e, t) {
   const s = {
     icon: e.icon,
     size: e.size,
-    theme: e.theme ?? W,
-    fill: e.fill ?? k,
-    weight: Number(e.weight ?? L)
+    theme: e.theme ?? L,
+    fill: e.fill ?? B,
+    weight: Number(e.weight ?? G)
   };
-  j.set(T(s), t), M.set(`${s.icon}::${s.size}`, t);
+  A.set(j(s), t), I.set(`${s.icon}::${s.size}`, t);
 }
-function ae(e) {
+function ce(e) {
   const t = {
     icon: e.icon,
     size: e.size,
-    theme: e.theme ?? W,
-    fill: e.fill ?? k,
-    weight: Number(e.weight ?? L)
+    theme: e.theme ?? L,
+    fill: e.fill ?? B,
+    weight: Number(e.weight ?? G)
   };
-  j.delete(T(t)), M.delete(`${t.icon}::${t.size}`);
+  A.delete(j(t)), I.delete(`${t.icon}::${t.size}`);
 }
-function G(e, t) {
-  const s = B(t);
+function K(e, t) {
+  const s = H(t);
   if (!s) throw new Error("[icons/registry] Failed to parse raw SVG: missing viewBox or path d");
-  se(e, s);
+  ie(e, s);
 }
 function le(e) {
   for (const [t, s] of Object.entries(e)) {
     let i;
-    for (const [r, l] of Object.entries(ee))
-      if (r.replace(/\\/g, "/").endsWith(`/${t}.svg`)) {
-        i = l;
+    for (const [n, c] of Object.entries(te))
+      if (n.replace(/\\/g, "/").endsWith(`/${t}.svg`)) {
+        i = c;
         break;
       }
     if (!(typeof i != "string" || !i.includes("<svg")))
-      for (const r of Object.keys(s)) {
-        const l = Number(r);
-        Number.isFinite(l) && G({ icon: t, size: l }, i);
+      for (const n of Object.keys(s)) {
+        const c = Number(n);
+        Number.isFinite(c) && K({ icon: t, size: c }, i);
       }
   }
 }
-function ce(e, t, s, i) {
-  for (const r of t)
-    G({ icon: e, size: r, ...i }, s(r));
+function me(e, t, s, i) {
+  for (const n of t)
+    K({ icon: e, size: n, ...i }, s(n));
 }
-function me(e, t, s) {
+function fe(e, t, s) {
   return {
     Symbols: e,
     Custom: t ?? {},
@@ -281,13 +308,13 @@ function me(e, t, s) {
 }
 export {
   le as autoRegisterCustom,
-  ne as default,
-  me as defineIcons,
-  oe as getSymbol,
-  ne as materialSymbolsSvg,
-  ce as registerMultipleSizes,
-  G as registerRawSymbol,
-  se as registerSymbol,
-  ae as unregisterSymbol
+  oe as default,
+  fe as defineIcons,
+  ae as getSymbol,
+  oe as materialSymbolsSvg,
+  me as registerMultipleSizes,
+  K as registerRawSymbol,
+  ie as registerSymbol,
+  ce as unregisterSymbol
 };
 //# sourceMappingURL=index.js.map

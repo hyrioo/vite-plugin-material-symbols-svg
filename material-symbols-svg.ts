@@ -224,7 +224,19 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
                             }
                             // Sort map by key
                             const sorted = Object.fromEntries(Object.entries(versions).sort((a, b) => a[0].localeCompare(b[0])));
-                            await fs.writeFile(versionsFile, JSON.stringify(sorted, null, 2));
+                            const versionsContent = JSON.stringify(sorted, null, 2);
+
+                            let existingVersions = '';
+                            try {
+                                existingVersions = await fs.readFile(versionsFile, 'utf-8');
+                            } catch {
+                                // ignore
+                            }
+
+                            if (existingVersions !== versionsContent) {
+                                await fs.writeFile(versionsFile, versionsContent);
+                            }
+
                             // Generate icons.d.ts with union of names (from metadata)
                             try {
                                 const names = Object.keys(sorted);
@@ -235,7 +247,19 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
                                 const content = `${banner}export type MaterialSymbolIcon = ${union};\n`;
                                 try {
                                     await fs.mkdir(distDir, {recursive: true});
-                                    await fs.writeFile(iconsDtsFile, content);
+
+                                    let existing = '';
+                                    try {
+                                        existing = await fs.readFile(iconsDtsFile, 'utf-8');
+                                    } catch {
+                                        // ignore
+                                    }
+
+                                    if (existing !== content) {
+                                        await fs.writeFile(iconsDtsFile, content);
+                                        const now = new Date();
+                                        await fs.utimes(iconsDtsFile, now, now).catch(() => {});
+                                    }
                                 } catch (ee) {
                                     // If writing to dist fails (e.g., read-only file system), warn and continue.
                                     const m2 = ee instanceof Error ? ee.message : String(ee);
@@ -269,7 +293,22 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
                         : 'string';
                     const content2 = `${banner}export type IconKey = ${keyUnion};\n`;
                     await fs.mkdir(distDir, { recursive: true });
-                    await fs.writeFile(registryTypesFile, content2);
+
+                    // Only write if changed to avoid unnecessary IDE re-indexing/watcher triggers
+                    let existing = '';
+                    try {
+                        existing = await fs.readFile(registryTypesFile, 'utf-8');
+                    } catch (e) {
+                        // ignore
+                    }
+
+                    if (existing !== content2) {
+                        await fs.writeFile(registryTypesFile, content2);
+                        // Some IDEs (like PHPStorm) might need a nudge to see changes in node_modules.
+                        // Updating the mtime can sometimes help trigger the file watcher.
+                        const now = new Date();
+                        await fs.utimes(registryTypesFile, now, now).catch(() => {});
+                    }
                 } catch (ee) {
                     const m2 = ee instanceof Error ? ee.message : String(ee);
                     this.warn(`[material-symbols-svg] Failed to write dist/registry-types.d.ts: ${m2}`);
