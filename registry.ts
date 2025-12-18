@@ -137,18 +137,57 @@ export function registerRawSymbol(k: Partial<SymbolKey> & { icon: string; size: 
 export function autoRegisterCustom(map: Record<string, Readonly<Record<number, unknown>>>): void {
   // customFiles contains raw SVGs keyed by file path; match by file name `${icon}.svg`
   for (const [iconName, sizesObj] of Object.entries(map)) {
-    let raw: string | undefined;
-    for (const [p, content] of Object.entries(customFiles)) {
-      if (p.replace(/\\/g, '/').endsWith(`/${iconName}.svg`)) {
-        raw = content;
-        break;
-      }
-    }
-    if (typeof raw !== 'string' || !raw.includes('<svg')) continue;
-    for (const sizeKey of Object.keys(sizesObj)) {
+    for (const [sizeKey, value] of Object.entries(sizesObj)) {
       const size = Number(sizeKey);
       if (!Number.isFinite(size)) continue;
-      registerRawSymbol({ icon: iconName, size }, raw);
+
+      // If the value is a pre-transformed object { viewBox, d }, register it directly
+      if (value && typeof value === 'object' && 'viewBox' in value && 'd' in value) {
+        registerSymbol({ icon: iconName, size }, value as SymbolSvg);
+        continue;
+      }
+
+      // If the value is a string path, try to find it in customFiles glob
+      // The path in defineIcons is relative to the config file (e.g. './custom/spark.svg')
+      // but in Vite's import.meta.glob, it's usually relative to the root or absolute.
+      let raw: string | undefined;
+
+      if (typeof value === 'string' && value.endsWith('.svg')) {
+        const normalizedValue = value.replace(/\\/g, '/');
+        const fileName = normalizedValue.split('/').pop();
+        
+        // Try exact match in glob first (if the glob path ends with the given string)
+        for (const [p, content] of Object.entries(customFiles)) {
+          if (p.replace(/\\/g, '/').endsWith(normalizedValue.startsWith('./') ? normalizedValue.slice(2) : normalizedValue)) {
+            raw = content;
+            break;
+          }
+        }
+
+        // Fallback to matching by filename if path not found
+        if (!raw && fileName) {
+          for (const [p, content] of Object.entries(customFiles)) {
+            if (p.replace(/\\/g, '/').endsWith(`/${fileName}`)) {
+              raw = content;
+              break;
+            }
+          }
+        }
+      }
+
+      // Fallback: use iconName to find the file if no raw was found yet
+      if (!raw) {
+        for (const [p, content] of Object.entries(customFiles)) {
+          if (p.replace(/\\/g, '/').endsWith(`/${iconName}.svg`)) {
+            raw = content;
+            break;
+          }
+        }
+      }
+
+      if (typeof raw === 'string' && raw.includes('<svg')) {
+        registerRawSymbol({ icon: iconName, size }, raw);
+      }
     }
   }
 }
@@ -172,10 +211,18 @@ export type IconConfig = {
   themes?: readonly Theme[];
 };
 
+/**
+ * A type that hints to the IDE that the string is a relative file path.
+ */
+type RelativePath = `./${string}` | `../${string}`;
+
 // defineIcons helper to create strongly typed maps
 // A map of custom icons where each icon may specify any subset of optical sizes
 // Example: { spark: { 24: svg24 }, brand: { 20: svg20, 40: svg40 } }
-export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown>>>>;
+export type DefineCustomMap = Record<
+  string,
+  Partial<Readonly<Record<OpticalSize, unknown | RelativePath>>>
+>;
 /**
  * defineIcons
  * - symbols: the Material Symbols configuration per icon

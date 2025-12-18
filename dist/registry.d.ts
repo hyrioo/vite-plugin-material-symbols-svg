@@ -35,7 +35,11 @@ export type IconConfig = {
     fills?: readonly Fill[];
     themes?: readonly Theme[];
 };
-export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown>>>>;
+/**
+ * A type that hints to the IDE that the string is a relative file path.
+ */
+type RelativePath = `./${string}` | `../${string}`;
+export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown | RelativePath>>>>;
 /**
  * defineIcons
  * - symbols: the Material Symbols configuration per icon
@@ -48,3 +52,4 @@ export declare function defineIcons<S extends Partial<Record<MaterialSymbolIcon,
     readonly Default: D;
 };
 export type DefinedIcons = ReturnType<typeof defineIcons>;
+export {};
