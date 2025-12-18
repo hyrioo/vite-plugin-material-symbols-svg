@@ -21,16 +21,22 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { Plugin } from 'vite';
 import type { PluginContext } from 'rollup';
+import type { IconConfig } from './registry';
 
 type Theme = 'rounded' | 'outlined' | 'sharp';
 
-export type SymbolsIconsMap = Record<string, {
-    sizes?: readonly number[];
-    weights?: readonly number[];
-    // Accept booleans or numeric literals; normalize later to 0|1
-    fills?: readonly (boolean | 0 | 1)[];
-    themes?: readonly ('rounded' | 'outlined' | 'sharp')[]
-}>;
+// Input shape created by defineIcons()
+export type IconsInput = {
+    Symbols: Record<string, {
+        sizes?: readonly number[];
+        weights?: readonly number[];
+        // Accept booleans or numeric literals; normalize later to 0|1
+        fills?: readonly (boolean | 0 | 1)[];
+        themes?: readonly ('rounded' | 'outlined' | 'sharp')[]
+    }>;
+    Custom?: Record<string, Partial<Readonly<Record<number, unknown>>>>;
+    Default?: Partial<IconConfig>;
+};
 
 const IconDefaultConfig = {
     sizes: [20, 24, 40, 48] as const,
@@ -40,7 +46,6 @@ const IconDefaultConfig = {
 };
 
 export interface MaterialSymbolsPluginOptions {
-    icons: SymbolsIconsMap;          // required — pass the exported Icons object directly
     concurrency?: number;
     strict?: boolean;                // fail build when downloads fail
     enabled?: boolean;
@@ -134,16 +139,16 @@ function normalizeThemes(input: readonly unknown[] | undefined, fallback: readon
     return unique(arr);
 }
 
-export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): Plugin {
+export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialSymbolsPluginOptions = {}): Plugin {
     const options = {
         concurrency: opts.concurrency ?? 8,
         strict: opts.strict ?? false,
         enabled: opts.enabled ?? true,
         cleanRemoved: opts.cleanRemoved ?? false,
-    } as Required<Omit<MaterialSymbolsPluginOptions, 'icons'>>;
+    } as Required<MaterialSymbolsPluginOptions>;
 
-    if (!opts || !opts.icons) {
-        throw new Error('[material-symbols-svg] options.icons is required');
+    if (!iconsDef || !iconsDef.Symbols) {
+        throw new Error('[material-symbols-svg] First parameter must be the return value of defineIcons()');
     }
 
     let root = '';
@@ -178,6 +183,7 @@ export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): 
             // consumers always pick up the augmentation via ./icons.d.ts next to index.d.ts
             const distDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', 'dist');
             const iconsDtsFile = path.resolve(distDir, 'icons.d.ts');
+            const registryTypesFile = path.resolve(distDir, 'registry-types.d.ts');
             try {
                 // Only fetch if file missing
                 if (!(await exists(versionsFile))) {
@@ -202,7 +208,8 @@ export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): 
                         if (parsed && Array.isArray(parsed.icons)) {
                             const versions: Record<string, string | number> = {};
                             for (const icon of parsed.icons) {
-                                const families: any[] = Array.isArray(icon?.unsupported_families) ? icon.unsupported_families : [];
+                                const famsAny = (icon && (icon as any)['unsupported_families']) as any;
+                                const families: any[] = Array.isArray(famsAny) ? famsAny : [];
                                 let skip = false;
                                 for (const fam of families) {
                                     if (String(fam).toLowerCase().includes('symbols')) {
@@ -211,14 +218,14 @@ export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): 
                                     }
                                 }
                                 if (skip) continue;
-                                const name = String(icon?.name || '');
+                                const name = String((icon as any)?.name || '');
                                 if (!name) continue;
-                                versions[name] = icon?.version;
+                                versions[name] = (icon as any)?.version;
                             }
                             // Sort map by key
                             const sorted = Object.fromEntries(Object.entries(versions).sort((a, b) => a[0].localeCompare(b[0])));
                             await fs.writeFile(versionsFile, JSON.stringify(sorted, null, 2));
-                            // Generate icons.d.ts with union of names
+                            // Generate icons.d.ts with union of names (from metadata)
                             try {
                                 const names = Object.keys(sorted);
                                 const union = names
@@ -233,6 +240,20 @@ export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): 
                                     // If writing to dist fails (e.g., read-only file system), warn and continue.
                                     const m2 = ee instanceof Error ? ee.message : String(ee);
                                     this.warn(`[material-symbols-svg] Failed to overwrite dist/icons.d.ts: ${m2}`);
+                                }
+                                // Also generate registry-types.d.ts (IconKey) based on consumer-provided icons
+                                try {
+                                    const symKeys = Object.keys(iconsDef.Symbols || {});
+                                    const customKeys = Object.keys(iconsDef.Custom || {});
+                                    const all = Array.from(new Set([...symKeys, ...customKeys]));
+                                    const keyUnion = all.length
+                                      ? all.map((n) => `'${n.replace(/'/g, "\\'")}'`).join(' | ')
+                                      : 'string';
+                                    const content2 = `${banner}export type IconKey = ${keyUnion};\n`;
+                                    await fs.writeFile(registryTypesFile, content2);
+                                } catch (ee) {
+                                    const m2 = ee instanceof Error ? ee.message : String(ee);
+                                    this.warn(`[material-symbols-svg] Failed to write dist/registry-types.d.ts: ${m2}`);
                                 }
                             } catch (e) {
                                 // non-fatal
@@ -254,15 +275,16 @@ export default function materialSymbolsSvg(opts: MaterialSymbolsPluginOptions): 
                 if (options.strict) this.error(`[material-symbols-svg] Metadata prefetch failed: ${msg}`); else this.warn(`[material-symbols-svg] Metadata prefetch failed: ${msg}`);
             }
 
-            const iconsMap = opts.icons as SymbolsIconsMap;
+            const iconsMap = iconsDef.Symbols;
+            const defaults = iconsDef.Default ?? {};
             const tasks: {url: string; file: string}[] = [];
 
             for (const [icon, meta] of Object.entries(iconsMap)) {
                 // Merge with defaults using normalization helpers
-                const sizes = normalizeNums(meta.sizes as unknown as readonly unknown[] | undefined, IconDefaultConfig.sizes);
-                const weights = normalizeNums(meta.weights as unknown as readonly unknown[] | undefined, IconDefaultConfig.weights);
-                const fills = normalizeFills(meta.fills, IconDefaultConfig.fills);
-                const themes = normalizeThemes(meta.themes as unknown as readonly unknown[] | undefined, IconDefaultConfig.themes);
+                const sizes = normalizeNums((meta.sizes ?? defaults.sizes) as unknown as readonly unknown[] | undefined, IconDefaultConfig.sizes);
+                const weights = normalizeNums((meta.weights ?? defaults.weights) as unknown as readonly unknown[] | undefined, IconDefaultConfig.weights);
+                const fills = normalizeFills((meta.fills ?? (defaults.fills as any)) as any, IconDefaultConfig.fills);
+                const themes = normalizeThemes((meta.themes ?? defaults.themes) as unknown as readonly unknown[] | undefined, IconDefaultConfig.themes);
 
                 for (const theme of unique(themes)) {
                     await ensureDir(path.resolve(outBase, theme));

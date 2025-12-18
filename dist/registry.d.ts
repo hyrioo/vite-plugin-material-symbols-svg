@@ -36,7 +36,15 @@ export type IconConfig = {
     themes?: readonly Theme[];
 };
 export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown>>>>;
-export declare function defineIcons<S extends Partial<Record<MaterialSymbolIcon, Partial<IconConfig>>>, C extends DefineCustomMap = Record<never, never>>(symbols: S, custom?: C): {
+/**
+ * defineIcons
+ * - symbols: the Material Symbols configuration per icon
+ * - custom: optional custom icons map
+ * - defaults: optional default config applied to all symbol entries
+ */
+export declare function defineIcons<S extends Partial<Record<MaterialSymbolIcon, Partial<IconConfig>>>, C extends DefineCustomMap = Record<never, never>, D extends Partial<IconConfig> | undefined = undefined>(symbols: S, custom?: C, defaults?: D): {
     readonly Symbols: S;
     readonly Custom: C;
+    readonly Default: D;
 };
+export type DefinedIcons = ReturnType<typeof defineIcons>;

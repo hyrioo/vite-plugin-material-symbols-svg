@@ -176,13 +176,24 @@ export type IconConfig = {
 // A map of custom icons where each icon may specify any subset of optical sizes
 // Example: { spark: { 24: svg24 }, brand: { 20: svg20, 40: svg40 } }
 export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown>>>>;
+/**
+ * defineIcons
+ * - symbols: the Material Symbols configuration per icon
+ * - custom: optional custom icons map
+ * - defaults: optional default config applied to all symbol entries
+ */
 export function defineIcons<
-    S extends Partial<Record<MaterialSymbolIcon, Partial<IconConfig>>>,
-    C extends DefineCustomMap = Record<never, never>
->(symbols: S, custom?: C) {
+  S extends Partial<Record<MaterialSymbolIcon, Partial<IconConfig>>>,
+  C extends DefineCustomMap = Record<never, never>,
+  D extends Partial<IconConfig> | undefined = undefined
+>(symbols: S, custom?: C, defaults?: D) {
   return {
     Symbols: symbols,
     Custom: (custom ?? ({} as C)),
+    Default: (defaults ?? (undefined as D)),
   } as const;
 }
+
+// Shape of the object returned by defineIcons() — used by the Vite plugin typing
+export type DefinedIcons = ReturnType<typeof defineIcons>;
 
