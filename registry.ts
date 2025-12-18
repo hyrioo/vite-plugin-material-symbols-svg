@@ -11,7 +11,7 @@ export type Theme = 'rounded' | 'outlined' | 'sharp';
 // Strongly-typed icon names come from generated ./icons.d.ts (overwritten in dev)
 // Ship placeholder: export type MaterialSymbolIcon = string;
 import type { MaterialSymbolIcon } from './icons';
-import symbolMap from './registry-map';
+import symbolMap from './registry-map.js';
 
 export interface SymbolSvg {
   d: string;

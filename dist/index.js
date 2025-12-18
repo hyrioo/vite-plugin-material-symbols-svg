@@ -1,6 +1,6 @@
 import F from "node:path";
 import m from "node:fs/promises";
-import Y from "./registry-map";
+import Y from "./registry-map.js";
 const j = {
   sizes: [20, 24, 40, 48],
   weights: [400],
