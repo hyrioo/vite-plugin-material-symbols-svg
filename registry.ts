@@ -29,16 +29,8 @@ export interface SymbolKey {
 // Eagerly load all Symbols SVGs as raw strings at build time
 const symbolFiles = (symbolMap || {}) as Record<string, string>;
 
-// Also load raw custom icons from the custom folder
-const customFiles = import.meta.glob('/custom/**/*.svg', {
-  as: 'raw',
-  eager: true,
-}) as Record<string, string>;
-
-// Internal registry maps
+// Internal registry map
 const REGISTRY = new Map<string, SymbolSvg>(); // symbols (file-based)
-const CUSTOM_REGISTRY = new Map<string, SymbolSvg>(); // exact axes (optional)
-const CUSTOM_SIMPLE = new Map<string, SymbolSvg>(); // icon+size only (axis-agnostic)
 
 const DEFAULT_THEME: Theme = 'rounded';
 const DEFAULT_FILL: 0 | 1 = 0;
@@ -50,7 +42,25 @@ function keyOf(k: SymbolKey): string {
 
 function parseFilename(filePath: string): SymbolKey | null {
   // Example: rounded/folder.w200.s24.svg or folder-fill.w200.s24.svg
-  const m = filePath.replace(/\\/g, '/').match(/(rounded|outlined|sharp)\/([^/]+)\.svg$/);
+  // Custom example: custom/spark/24
+  const normalized = filePath.replace(/\\/g, '/');
+
+  if (normalized.startsWith('custom/')) {
+    const parts = normalized.split('/');
+    if (parts.length < 3) return null;
+    const icon = parts[1];
+    const size = Number(parts[2]);
+    if (isNaN(size)) return null;
+    return {
+      theme: DEFAULT_THEME,
+      icon,
+      fill: DEFAULT_FILL,
+      weight: DEFAULT_WEIGHT,
+      size,
+    };
+  }
+
+  const m = normalized.match(/(rounded|outlined|sharp)\/([^/]+)\.svg$/);
   if (!m) return null;
   const theme = m[1] as Theme;
   const filename = m[2];
@@ -92,122 +102,7 @@ for (const [pathName, rawSvg] of Object.entries(symbolFiles)) {
 }
 
 export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
-  const key = keyOf(k);
-  const exact = CUSTOM_REGISTRY.get(key);
-  if (exact) return exact;
-  const simpleKey = `${k.icon}::${k.size}`;
-  const simple = CUSTOM_SIMPLE.get(simpleKey);
-  if (simple) return simple;
-  return REGISTRY.get(key);
-}
-
-export function registerSymbol(k: Partial<SymbolKey> & { icon: string; size: number }, svg: SymbolSvg): void {
-  const full: SymbolKey = {
-    icon: k.icon,
-    size: k.size,
-    theme: (k.theme ?? DEFAULT_THEME) as Theme,
-    fill: (k.fill ?? DEFAULT_FILL) as 0 | 1,
-    weight: Number(k.weight ?? DEFAULT_WEIGHT),
-  };
-  CUSTOM_REGISTRY.set(keyOf(full), svg);
-  CUSTOM_SIMPLE.set(`${full.icon}::${full.size}`, svg);
-}
-
-export function unregisterSymbol(k: Partial<SymbolKey> & { icon: string; size: number }): void {
-  const full: SymbolKey = {
-    icon: k.icon,
-    size: k.size,
-    theme: (k.theme ?? DEFAULT_THEME) as Theme,
-    fill: (k.fill ?? DEFAULT_FILL) as 0 | 1,
-    weight: Number(k.weight ?? DEFAULT_WEIGHT),
-  };
-  CUSTOM_REGISTRY.delete(keyOf(full));
-  CUSTOM_SIMPLE.delete(`${full.icon}::${full.size}`);
-}
-
-export function registerRawSymbol(k: Partial<SymbolKey> & { icon: string; size: number }, rawSvg: string): void {
-  const parsed = parseSvg(rawSvg);
-  if (!parsed) throw new Error('[icons/registry] Failed to parse raw SVG: missing viewBox or path d');
-  registerSymbol(k, parsed);
-}
-
-// Helper to auto-register custom icons from a map of sizes
-export function autoRegisterCustom(map: Record<string, Readonly<Record<number, unknown>>>): void {
-  // customFiles contains raw SVGs keyed by file path; match by file name `${icon}.svg`
-  for (const [iconName, sizesObj] of Object.entries(map)) {
-    for (const [sizeKey, value] of Object.entries(sizesObj)) {
-      const size = Number(sizeKey);
-      if (!Number.isFinite(size)) continue;
-
-      // If the value is a pre-transformed object { viewBox, d }, register it directly
-      if (value && typeof value === 'object' && 'viewBox' in value && 'd' in value) {
-        registerSymbol({ icon: iconName, size }, value as SymbolSvg);
-        continue;
-      }
-
-      // If the value is a string path, try to find it in symbolMap (generated) or customFiles glob
-      // The path in defineIcons is relative to the config file (e.g. './custom/spark.svg')
-      // but in Vite's import.meta.glob, it's usually relative to the root or absolute.
-      let raw: string | undefined;
-
-      if (typeof value === 'string' && value.endsWith('.svg')) {
-        const normalizedValue = value.replace(/\\/g, '/');
-        const fileName = normalizedValue.split('/').pop();
-
-        // 1. Try to find in symbolMap (generated from relative paths in defineIcons)
-        const mapKey = `custom/${iconName}/${sizeKey}`;
-        if (symbolFiles[mapKey]) {
-          raw = symbolFiles[mapKey];
-        }
-
-        // 2. Try exact match in glob (legacy / broad match)
-        if (!raw) {
-          for (const [p, content] of Object.entries(customFiles)) {
-            if (p.replace(/\\/g, '/').endsWith(normalizedValue.startsWith('./') ? normalizedValue.slice(2) : normalizedValue)) {
-              raw = content;
-              break;
-            }
-          }
-        }
-
-        // 3. Fallback to matching by filename if path not found
-        if (!raw && fileName) {
-          for (const [p, content] of Object.entries(customFiles)) {
-            if (p.replace(/\\/g, '/').endsWith(`/${fileName}`)) {
-              raw = content;
-              break;
-            }
-          }
-        }
-      }
-
-      // Fallback: use iconName to find the file if no raw was found yet
-      if (!raw) {
-        for (const [p, content] of Object.entries(customFiles)) {
-          if (p.replace(/\\/g, '/').endsWith(`/${iconName}.svg`)) {
-            raw = content;
-            break;
-          }
-        }
-      }
-
-      if (typeof raw === 'string' && raw.includes('<svg')) {
-        registerRawSymbol({ icon: iconName, size }, raw);
-      }
-    }
-  }
-}
-
-// Convenience: register multiple optical sizes for a single custom icon
-export function registerMultipleSizes(
-  icon: string,
-  sizes: readonly number[],
-  resolveRawSvg: (size: number) => string,
-  options?: Partial<Pick<SymbolKey, 'theme' | 'fill' | 'weight'>>,
-): void {
-  for (const s of sizes) {
-    registerRawSymbol({ icon, size: s, ...options }, resolveRawSvg(s));
-  }
+  return REGISTRY.get(keyOf(k));
 }
 
 export type IconConfig = {
