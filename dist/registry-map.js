@@ -1,2 +1,4 @@
-"use strict";const s={};module.exports=s;
+"use strict";
+const registryMap = {};
+module.exports = registryMap;
 //# sourceMappingURL=registry-map.js.map

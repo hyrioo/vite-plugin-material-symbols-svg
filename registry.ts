@@ -33,15 +33,27 @@ if (typeof window !== 'undefined' || (globalThis as any).VITE_CLIENT) {
   // @ts-ignore
   import('./registry-map.js').then(m => {
     const symbolFiles = (m.default || {}) as Record<string, string>;
+    const keys = Object.keys(symbolFiles);
+    if (import.meta.env?.DEV) {
+      console.log(`[material-symbols-svg] Loading registry-map.js with ${keys.length} symbols`);
+    }
     // Build the symbols registry
+    let count = 0;
     for (const [pathName, rawSvg] of Object.entries(symbolFiles)) {
       const meta = parseFilename(pathName);
       if (!meta) continue;
       const parsed = parseSvg(rawSvg);
       if (!parsed) continue;
       REGISTRY.set(keyOf(meta), parsed);
+      count++;
     }
-  }).catch(() => {
+    if (import.meta.env?.DEV) {
+      console.log(`[material-symbols-svg] Registry populated with ${count} symbols`);
+    }
+  }).catch((err) => {
+    if (import.meta.env?.DEV) {
+      console.error('[material-symbols-svg] Failed to load registry-map.js', err);
+    }
     // registry-map.js might not exist or fail to load in non-browser environments
   });
 }
@@ -110,7 +122,16 @@ function parseSvg(svg: string): SymbolSvg | null {
 // (Removed static build, moved to dynamic import above)
 
 export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
-  return REGISTRY.get(keyOf(k));
+  const key = keyOf(k);
+  const symbol = REGISTRY.get(key);
+  if (import.meta.env?.DEV) {
+    if (symbol) {
+      console.log(`[material-symbols-svg] getSymbol: found "${key}"`);
+    } else {
+      console.warn(`[material-symbols-svg] getSymbol: NOT found "${key}"`);
+    }
+  }
+  return symbol;
 }
 
 export type IconConfig = {
@@ -143,6 +164,11 @@ export function defineIcons<
   C extends DefineCustomMap = Record<never, never>,
   D extends Partial<IconConfig> | undefined = undefined
 >(symbols: S, custom?: C, defaults?: D) {
+  if (import.meta.env?.DEV) {
+    const symbolCount = Object.keys(symbols || {}).length;
+    const customCount = Object.keys(custom || {}).length;
+    console.log(`[material-symbols-svg] defineIcons: symbols=${symbolCount}, custom=${customCount}`);
+  }
   return {
     Symbols: symbols,
     Custom: (custom ?? ({} as C)),

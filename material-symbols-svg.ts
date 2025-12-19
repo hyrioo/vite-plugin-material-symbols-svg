@@ -211,6 +211,7 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
             try {
                 // Only fetch if file missing
                 if (!(await exists(versionsFile))) {
+                    this.info('[material-symbols-svg] Fetching Material Symbols metadata...');
                     // Use the correct Material Symbols metadata endpoint; strip XSSI prefix
                     const metaUrl = 'https://fonts.google.com/metadata/icons?key=material_symbols&incomplete=true';
                     const res = await fetch(metaUrl);
@@ -453,6 +454,10 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
 
             const summary = `[material-symbols-svg] Done. Saved: ${saved}, Skipped: ${skipped}, Failed: ${failed}`;
             if (failed > 0 && options.strict) this.error(summary); else this.info(summary);
+
+            if (import.meta.env?.DEV) {
+                this.info(`[material-symbols-svg] Registry entries generated: ${tasks.length}`);
+            }
         },
     };
 }
