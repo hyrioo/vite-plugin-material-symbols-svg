@@ -455,7 +455,9 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
             const summary = `[material-symbols-svg] Done. Saved: ${saved}, Skipped: ${skipped}, Failed: ${failed}`;
             if (failed > 0 && options.strict) this.error(summary); else this.info(summary);
 
-            if (import.meta.env?.DEV) {
+            const IS_DEV = (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') || 
+                           (typeof (import.meta as any).env !== 'undefined' && (import.meta as any).env.DEV);
+            if (IS_DEV) {
                 this.info(`[material-symbols-svg] Registry entries generated: ${tasks.length}`);
             }
         },

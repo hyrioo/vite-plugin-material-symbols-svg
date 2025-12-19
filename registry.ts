@@ -28,13 +28,16 @@ export interface SymbolKey {
 // Internal registry map
 const REGISTRY = new Map<string, SymbolSvg>(); // symbols (file-based)
 
+const IS_DEV = (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') || 
+               (typeof (import.meta as any).env !== 'undefined' && (import.meta as any).env.DEV);
+
 // Eagerly load all Symbols SVGs as raw strings at build time
 if (typeof window !== 'undefined' || (globalThis as any).VITE_CLIENT) {
   // @ts-ignore
   import('./registry-map.js').then(m => {
     const symbolFiles = (m.default || {}) as Record<string, string>;
     const keys = Object.keys(symbolFiles);
-    if (import.meta.env?.DEV) {
+    if (IS_DEV) {
       console.log(`[material-symbols-svg] Loading registry-map.js with ${keys.length} symbols`);
     }
     // Build the symbols registry
@@ -47,11 +50,11 @@ if (typeof window !== 'undefined' || (globalThis as any).VITE_CLIENT) {
       REGISTRY.set(keyOf(meta), parsed);
       count++;
     }
-    if (import.meta.env?.DEV) {
+    if (IS_DEV) {
       console.log(`[material-symbols-svg] Registry populated with ${count} symbols`);
     }
   }).catch((err) => {
-    if (import.meta.env?.DEV) {
+    if (IS_DEV) {
       console.error('[material-symbols-svg] Failed to load registry-map.js', err);
     }
     // registry-map.js might not exist or fail to load in non-browser environments
@@ -124,7 +127,7 @@ function parseSvg(svg: string): SymbolSvg | null {
 export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
   const key = keyOf(k);
   const symbol = REGISTRY.get(key);
-  if (import.meta.env?.DEV) {
+  if (IS_DEV) {
     if (symbol) {
       console.log(`[material-symbols-svg] getSymbol: found "${key}"`);
     } else {
@@ -164,7 +167,7 @@ export function defineIcons<
   C extends DefineCustomMap = Record<never, never>,
   D extends Partial<IconConfig> | undefined = undefined
 >(symbols: S, custom?: C, defaults?: D) {
-  if (import.meta.env?.DEV) {
+  if (IS_DEV) {
     const symbolCount = Object.keys(symbols || {}).length;
     const customCount = Object.keys(custom || {}).length;
     console.log(`[material-symbols-svg] defineIcons: symbols=${symbolCount}, custom=${customCount}`);
