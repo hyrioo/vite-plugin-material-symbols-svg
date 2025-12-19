@@ -16,5 +16,7 @@ export type {
     Theme,
     IconConfig,
     DefinedIcons,
+    SymbolKey,
+    SymbolSvg,
 } from './registry';
 export type { IconKey } from './registry-types';

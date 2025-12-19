@@ -11,7 +11,6 @@ export type Theme = 'rounded' | 'outlined' | 'sharp';
 // Strongly-typed icon names come from generated ./icons.d.ts (overwritten in dev)
 // Ship placeholder: export type MaterialSymbolIcon = string;
 import type { MaterialSymbolIcon } from './icons';
-import symbolMap from './registry-map.js';
 
 export interface SymbolSvg {
   d: string;
@@ -26,11 +25,26 @@ export interface SymbolKey {
   size: number; // optical size in px
 }
 
-// Eagerly load all Symbols SVGs as raw strings at build time
-const symbolFiles = (symbolMap || {}) as Record<string, string>;
-
 // Internal registry map
 const REGISTRY = new Map<string, SymbolSvg>(); // symbols (file-based)
+
+// Eagerly load all Symbols SVGs as raw strings at build time
+if (typeof window !== 'undefined' || (globalThis as any).VITE_CLIENT) {
+  // @ts-ignore
+  import('./registry-map.js').then(m => {
+    const symbolFiles = (m.default || {}) as Record<string, string>;
+    // Build the symbols registry
+    for (const [pathName, rawSvg] of Object.entries(symbolFiles)) {
+      const meta = parseFilename(pathName);
+      if (!meta) continue;
+      const parsed = parseSvg(rawSvg);
+      if (!parsed) continue;
+      REGISTRY.set(keyOf(meta), parsed);
+    }
+  }).catch(() => {
+    // registry-map.js might not exist or fail to load in non-browser environments
+  });
+}
 
 const DEFAULT_THEME: Theme = 'rounded';
 const DEFAULT_FILL: 0 | 1 = 0;
@@ -93,13 +107,7 @@ function parseSvg(svg: string): SymbolSvg | null {
 }
 
 // Build the symbols registry at module init
-for (const [pathName, rawSvg] of Object.entries(symbolFiles)) {
-  const meta = parseFilename(pathName);
-  if (!meta) continue;
-  const parsed = parseSvg(rawSvg);
-  if (!parsed) continue;
-  REGISTRY.set(keyOf(meta), parsed);
-}
+// (Removed static build, moved to dynamic import above)
 
 export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
   return REGISTRY.get(keyOf(k));

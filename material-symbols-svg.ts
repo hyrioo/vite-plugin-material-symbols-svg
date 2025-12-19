@@ -21,7 +21,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { Plugin } from 'vite';
 import type { PluginContext } from 'rollup';
-import type { IconConfig } from './registry';
+import type { IconConfig, SymbolKey, SymbolSvg } from './registry';
 
 type Theme = 'rounded' | 'outlined' | 'sharp';
 
