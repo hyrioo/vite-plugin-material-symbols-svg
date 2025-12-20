@@ -1,8 +1,8 @@
+import type { MaterialSymbolIcon } from './icons';
 export type OpticalSize = 20 | 24 | 40 | 48;
 export type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700;
 export type Fill = boolean;
 export type Theme = 'rounded' | 'outlined' | 'sharp';
-import type { MaterialSymbolIcon } from './src/consumer/icons';
 export interface SymbolSvg {
     d: string;
     viewBox: string;

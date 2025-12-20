@@ -5,19 +5,19 @@ export default defineConfig({
     lib: {
       entry: {
         index: 'index.ts',
-        'registry-map': 'registry-map.ts',
+        'loader-map': 'src/consumer/loader-map.ts',
       },
       name: 'VitePluginMaterialSymbolsSvg',
       formats: ['es', 'cjs'],
       fileName: (format, entryName) => {
-        if (entryName === 'registry-map') return 'registry-map.js';
+        if (entryName === 'loader-map') return 'loader-map.js';
         return `${entryName}.${format === 'es' ? 'js' : 'cjs'}`;
       },
     },
     rollupOptions: {
       external: [
         'vite',
-        './registry-map.js',
+        './loader-map.js',
         // Node built-ins that might be referenced by plugin utilities
         'node:fs',
         'node:fs/promises',

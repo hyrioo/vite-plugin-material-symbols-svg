@@ -1,14 +1,13 @@
 // Root package entry for the Vite plugin
 // Provide both default and named exports for the plugin function
 
-export { default } from './material-symbols-svg';
-export { default as materialSymbolsSvg } from './material-symbols-svg';
-export type { MaterialSymbolsPluginOptions } from './material-symbols-svg';
-export type { MaterialSymbolIcon } from './icons';
+export { default as materialSymbolsSvg } from './src/plugin/plugin';
+export type { MaterialSymbolsPluginOptions } from './src/plugin/plugin';
+export type { MaterialSymbolIcon } from './src/consumer/icons';
 export {
     defineIcons,
     getSymbol,
-} from './registry';
+} from './src/consumer/loader';
 export type {
     OpticalSize,
     Weight,
@@ -18,5 +17,5 @@ export type {
     DefinedIcons,
     SymbolKey,
     SymbolSvg,
-} from './registry';
-export type { IconKey } from './registry-types';
+} from './src/consumer/loader';
+export type { IconKey } from './src/consumer/loader-types';

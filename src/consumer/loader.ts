@@ -2,15 +2,13 @@
 // SVG registry used by the Vue icon component
 // Belongs to the vite-plugin package
 
+import type { MaterialSymbolIcon } from './icons';
+
 // Local copies of the minimal types to avoid coupling to the Vue package
 export type OpticalSize = 20 | 24 | 40 | 48;
 export type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700;
 export type Fill = boolean;
 export type Theme = 'rounded' | 'outlined' | 'sharp';
-
-// Strongly-typed icon names come from generated ./icons.d.ts (overwritten in dev)
-// Ship placeholder: export type MaterialSymbolIcon = string;
-import type { MaterialSymbolIcon } from './src/consumer/icons';
 
 export interface SymbolSvg {
   d: string;
@@ -29,20 +27,19 @@ export interface SymbolKey {
 const REGISTRY = new Map<string, SymbolSvg>();
 let RAW_MAP: Record<string, string> = {};
 
-const IS_DEV = (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') || 
-               (typeof (import.meta as any).env !== 'undefined' && (import.meta as any).env.DEV);
+const IS_DEV = true;
 
 // Eagerly load the registry map in browser/Vite environments
 if (typeof window !== 'undefined' || (globalThis as any).VITE_CLIENT) {
   // @ts-ignore
-  import('./registry-map.js').then(m => {
+  import('./loader-map.ts').then(m => {
     RAW_MAP = m.default || {};
     if (IS_DEV) {
-      console.log(`[material-symbols-svg] registry-map.js loaded with ${Object.keys(RAW_MAP).length} symbols`);
+      console.log(`[material-symbols-svg] loader-map.ts loaded with ${Object.keys(RAW_MAP).length} symbols`);
     }
   }).catch((err) => {
     if (IS_DEV) {
-      console.error('[material-symbols-svg] Failed to load registry-map.js', err);
+      console.error('[material-symbols-svg] Failed to load loader-map.ts', err);
     }
   });
 }
@@ -174,4 +171,3 @@ export function defineIcons<
 
 // Shape of the object returned by defineIcons() — used by the Vite plugin typing
 export type DefinedIcons = ReturnType<typeof defineIcons>;
-
