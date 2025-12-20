@@ -111,16 +111,11 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
             }
 
             // 4. Download icons
+            this.warn(`[material-symbols-svg] Downloading symbols`);
             const result = await downloadSymbols(tasks, options.concurrency, this);
 
             const summary = `[material-symbols-svg] Done. Saved: ${result.saved}, Skipped: ${result.skipped}, Failed: ${result.failed}`;
             if (result.failed > 0 && options.strict) this.error(summary); else this.info(summary);
-
-            const IS_DEV = (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') ||
-                (typeof (import.meta as any).env !== 'undefined' && (import.meta as any).env.DEV);
-            if (IS_DEV) {
-                this.info(`[material-symbols-svg] Registry entries generated: ${tasks.length}`);
-            }
         },
     };
 }

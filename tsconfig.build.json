@@ -1,9 +1,8 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "lib": ["ES2020", "DOM"],
     "rootDir": ".",
     "declaration": true,
     "emitDeclarationOnly": true,

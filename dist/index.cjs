@@ -2,7 +2,7 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const path = require("node:path");
 const fs = require("node:fs/promises");
-const _interopNamespaceDefaultOnly = (e) => Object.freeze(Object.defineProperty({ __proto__: null, default: e }, Symbol.toStringTag, { value: "Module" }));
+const loaderMap = require("./loader-map.js");
 async function exists$1(p) {
   try {
     await fs.access(p);
@@ -193,6 +193,7 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
 // Do not edit manually.
 `;
   try {
+    ctx.warn(`[material-symbols-svg] Generate loader-types.ts`);
     const symKeys = Object.keys(iconsDef.Symbols || {});
     const customKeys = Object.keys(iconsDef.Custom || {});
     const all = Array.from(/* @__PURE__ */ new Set([...symKeys, ...customKeys]));
@@ -216,6 +217,7 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
     ctx.warn(`[material-symbols-svg] Failed to write loader-types.ts: ${msg}`);
   }
   try {
+    ctx.warn(`[material-symbols-svg] Generate loader-map.ts`);
     const imports = [];
     const mapEntries = [];
     const defaults = iconsDef.Default ?? {};
@@ -270,7 +272,6 @@ ${mapEntries.join("\n")}
     ctx.warn(`[material-symbols-svg] Failed to write loader-map.ts: ${msg}`);
   }
 }
-const __vite_import_meta_env__ = {};
 async function ensureDir(dir) {
   await fs.mkdir(dir, { recursive: true });
 }
@@ -342,31 +343,15 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
           }
         }
       }
+      this.warn(`[material-symbols-svg] Downloading symbols`);
       const result = await downloadSymbols(tasks, options.concurrency, this);
       const summary = `[material-symbols-svg] Done. Saved: ${result.saved}, Skipped: ${result.skipped}, Failed: ${result.failed}`;
       if (result.failed > 0 && options.strict) this.error(summary);
       else this.info(summary);
-      const IS_DEV = typeof process !== "undefined" && process.env.NODE_ENV !== "production" || typeof __vite_import_meta_env__ !== "undefined" && false;
-      if (IS_DEV) {
-        this.info(`[material-symbols-svg] Registry entries generated: ${tasks.length}`);
-      }
     }
   };
 }
 const REGISTRY = /* @__PURE__ */ new Map();
-let RAW_MAP = {};
-if (typeof window !== "undefined" || globalThis.VITE_CLIENT) {
-  Promise.resolve().then(() => /* @__PURE__ */ _interopNamespaceDefaultOnly(require("./loader-map.js"))).then((m) => {
-    RAW_MAP = m.default || {};
-    {
-      console.log(`[material-symbols-svg] loader-map.ts loaded with ${Object.keys(RAW_MAP).length} symbols`);
-    }
-  }).catch((err) => {
-    {
-      console.error("[material-symbols-svg] Failed to load loader-map.ts", err);
-    }
-  });
-}
 const DEFAULT_THEME = "rounded";
 const DEFAULT_FILL = 0;
 const DEFAULT_WEIGHT = 200;
@@ -383,7 +368,7 @@ function getSymbol(k) {
   const key = keyOf(k);
   let symbol = REGISTRY.get(key);
   if (symbol) return symbol;
-  const raw = RAW_MAP[key];
+  const raw = loaderMap[key];
   if (raw) {
     symbol = parseSvg(raw) || void 0;
     if (symbol) {
@@ -418,7 +403,7 @@ function defineIcons(symbols, custom, defaults) {
         };
         const handleSvg = (raw) => {
           const svgString = typeof raw === "string" ? raw : raw == null ? void 0 : raw.default;
-          if (svgString && typeof svgString === "string") {
+          if (svgString) {
             const parsed = parseSvg(svgString);
             if (parsed) {
               REGISTRY.set(keyOf(key), parsed);

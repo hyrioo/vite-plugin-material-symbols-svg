@@ -1,2 +1,2 @@
-declare const _default: {};
-export default _default;
+declare const map: Record<string, string>;
+export default map;

@@ -64,6 +64,7 @@ export async function generateConsumerFiles(
 
     // 1. Generate loader-types.ts (IconKey)
     try {
+        ctx.warn(`[material-symbols-svg] Generate loader-types.ts`);
         const symKeys = Object.keys(iconsDef.Symbols || {});
         const customKeys = Object.keys(iconsDef.Custom || {});
         const all = Array.from(new Set([...symKeys, ...customKeys]));
@@ -91,6 +92,7 @@ export async function generateConsumerFiles(
 
     // 2. Generate loader-map.ts
     try {
+        ctx.warn(`[material-symbols-svg] Generate loader-map.ts`);
         const imports: string[] = [];
         const mapEntries: string[] = [];
         const defaults = iconsDef.Default ?? {};

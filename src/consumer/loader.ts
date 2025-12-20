@@ -23,26 +23,12 @@ export interface SymbolKey {
   size: number; // optical size in px
 }
 
+import RAW_MAP from './loader-map';
+
 // Internal registry map (parsed cache)
 const REGISTRY = new Map<string, SymbolSvg>();
-let RAW_MAP: Record<string, string> = {};
 
 const IS_DEV = true;
-
-// Eagerly load the registry map in browser/Vite environments
-if (typeof window !== 'undefined' || (globalThis as any).VITE_CLIENT) {
-  // @ts-ignore
-  import('./loader-map.ts').then(m => {
-    RAW_MAP = m.default || {};
-    if (IS_DEV) {
-      console.log(`[material-symbols-svg] loader-map.ts loaded with ${Object.keys(RAW_MAP).length} symbols`);
-    }
-  }).catch((err) => {
-    if (IS_DEV) {
-      console.error('[material-symbols-svg] Failed to load loader-map.ts', err);
-    }
-  });
-}
 
 const DEFAULT_THEME: Theme = 'rounded';
 const DEFAULT_FILL: 0 | 1 = 0;
@@ -136,7 +122,7 @@ export function defineIcons<
 
         const handleSvg = (raw: unknown) => {
           const svgString = (typeof raw === 'string' ? raw : (raw as any)?.default) as string;
-          if (svgString && typeof svgString === 'string') {
+          if (svgString) {
             const parsed = parseSvg(svgString);
             if (parsed) {
               REGISTRY.set(keyOf(key), parsed);
