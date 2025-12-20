@@ -61,6 +61,7 @@ export function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialSymbolsPl
 
             const tempDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', '.temp');
             const outBase = path.resolve(tempDir, 'symbols');
+            const distDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', 'dist');
             const srcPluginDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', 'dist', 'src', 'plugin');
             const srcConsumerDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', 'dist', 'src', 'consumer');
 
@@ -69,7 +70,7 @@ export function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialSymbolsPl
             // These are the new consumer files
             const iconsTsFile = path.resolve(srcPluginDir, 'icons.ts');
             const loaderTypesFile = path.resolve(srcConsumerDir, 'loader-types.d.ts');
-            const loaderMapFile = path.resolve(srcConsumerDir, 'loader-map.js');
+            const loaderMapFile = path.resolve(distDir, 'loader-map.js');
 
             await ensureDir(tempDir);
 

@@ -9,7 +9,7 @@ export default defineConfig({
         'loader-map': 'src/consumer/loader-map.js',
       },
       name: 'VitePluginMaterialSymbolsSvg',
-      formats: ['es', 'cjs'],
+      formats: ['es'],
       fileName: (format, entryName) => {
         if (entryName === 'loader-map') {
           return format === 'es' ? 'loader-map.js' : 'loader-map.cjs';

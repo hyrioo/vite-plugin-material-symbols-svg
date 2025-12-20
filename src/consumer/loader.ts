@@ -37,7 +37,7 @@ export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
     if (IS_DEV) {
         console.log(`[material-symbols-svg] Get symbol:`, key);
     }
-    
+
     // 1. Check parsed cache
     let symbol = REGISTRY.get(key);
     if (symbol) return symbol;
