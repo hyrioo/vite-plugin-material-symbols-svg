@@ -2,7 +2,7 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const path = require("node:path");
 const fs = require("node:fs/promises");
-const loaderMap = require("./loader-map.js");
+const loaderMap = require("./loader-map.cjs");
 async function exists$1(p) {
   try {
     await fs.access(p);
