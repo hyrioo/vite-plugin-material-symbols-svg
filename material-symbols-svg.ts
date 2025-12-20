@@ -361,7 +361,8 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
                                         const importPath = `/symbols/${theme}/${filename}?raw`;
                                         const varName = `i${i++}`;
                                         imports.push(`import ${varName} from '${importPath}';`);
-                                        mapEntries.push(`  '${theme}/${filename}': ${varName},`);
+                                        // Key: theme::icon::fill::weight::size
+                                        mapEntries.push(`  '${theme}::${icon}::${fill}::${weight}::${size}': ${varName},`);
                                     }
                                 }
                             }
@@ -374,7 +375,8 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
                             if (typeof value === 'string' && (value.startsWith('./') || value.startsWith('../'))) {
                                 const varName = `i${i++}`;
                                 imports.push(`import ${varName} from '${value}?raw';`);
-                                mapEntries.push(`  'custom/${icon}/${sizeKey}': ${varName},`);
+                                // Custom icons use DEFAULT_THEME (rounded), DEFAULT_FILL (0), DEFAULT_WEIGHT (200)
+                                mapEntries.push(`  'rounded::${icon}::0::200::${sizeKey}': ${varName},`);
                             }
                         }
                     }

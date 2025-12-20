@@ -288,7 +288,7 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
                     const importPath = `/symbols/${theme}/${filename}?raw`;
                     const varName = `i${i++}`;
                     imports.push(`import ${varName} from '${importPath}';`);
-                    mapEntries.push(`  '${theme}/${filename}': ${varName},`);
+                    mapEntries.push(`  '${theme}::${icon}::${fill}::${weight}::${size}': ${varName},`);
                   }
                 }
               }
@@ -299,7 +299,7 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
               if (typeof value === "string" && (value.startsWith("./") || value.startsWith("../"))) {
                 const varName = `i${i++}`;
                 imports.push(`import ${varName} from '${value}?raw';`);
-                mapEntries.push(`  'custom/${icon}/${sizeKey}': ${varName},`);
+                mapEntries.push(`  'rounded::${icon}::0::200::${sizeKey}': ${varName},`);
               }
             }
           }
@@ -385,25 +385,13 @@ ${mapEntries.join("\n")}
 }
 const __vite_import_meta_env__ = {};
 const REGISTRY = /* @__PURE__ */ new Map();
+let RAW_MAP = {};
 const IS_DEV = typeof process !== "undefined" && process.env.NODE_ENV !== "production" || typeof __vite_import_meta_env__ !== "undefined" && false;
 if (typeof window !== "undefined" || globalThis.VITE_CLIENT) {
   import("./registry-map.js").then((m) => {
-    const symbolFiles = m.default || {};
-    const keys = Object.keys(symbolFiles);
+    RAW_MAP = m.default || {};
     if (IS_DEV) {
-      console.log(`[material-symbols-svg] Loading registry-map.js with ${keys.length} symbols`);
-    }
-    let count = 0;
-    for (const [pathName, rawSvg] of Object.entries(symbolFiles)) {
-      const meta = parseFilename(pathName);
-      if (!meta) continue;
-      const parsed = parseSvg(rawSvg);
-      if (!parsed) continue;
-      REGISTRY.set(keyOf(meta), parsed);
-      count++;
-    }
-    if (IS_DEV) {
-      console.log(`[material-symbols-svg] Registry populated with ${count} symbols`);
+      console.log(`[material-symbols-svg] registry-map.js loaded with ${Object.keys(RAW_MAP).length} symbols`);
     }
   }).catch((err) => {
     if (IS_DEV) {
@@ -417,46 +405,6 @@ const DEFAULT_WEIGHT = 200;
 function keyOf(k) {
   return `${k.theme}::${k.icon}::${k.fill}::${k.weight}::${k.size}`;
 }
-function parseFilename(filePath) {
-  const normalized = filePath.replace(/\\/g, "/");
-  if (normalized.startsWith("custom/")) {
-    const parts = normalized.split("/");
-    if (parts.length < 3) return null;
-    const icon2 = parts[1];
-    const size2 = Number(parts[2]);
-    if (isNaN(size2)) return null;
-    return {
-      theme: DEFAULT_THEME,
-      icon: icon2,
-      fill: DEFAULT_FILL,
-      weight: DEFAULT_WEIGHT,
-      size: size2
-    };
-  }
-  const m = normalized.match(/(rounded|outlined|sharp)\/([^/]+)\.svg$/);
-  if (!m) return null;
-  const theme = m[1];
-  const filename = m[2];
-  const [base, ...suffixes] = filename.split(".");
-  let icon = base;
-  let fill = 0;
-  if (base.endsWith("-fill")) {
-    icon = base.slice(0, -"-fill".length);
-    fill = 1;
-  }
-  let weight = 400;
-  let size = 24;
-  for (const s of suffixes) {
-    if (s.startsWith("w")) {
-      const n = Number(s.slice(1));
-      if (Number.isFinite(n)) weight = n;
-    } else if (s.startsWith("s")) {
-      const n = Number(s.slice(1));
-      if (Number.isFinite(n)) size = n;
-    }
-  }
-  return { theme, icon, fill, weight, size };
-}
 function parseSvg(svg) {
   const viewBoxMatch = svg.match(/viewBox="([^"]+)"/i);
   const pathMatch = svg.match(/<path[^>]*\sd="([^"]+)"[^>]*>/i);
@@ -465,15 +413,23 @@ function parseSvg(svg) {
 }
 function getSymbol(k) {
   const key = keyOf(k);
-  const symbol = REGISTRY.get(key);
-  if (IS_DEV) {
+  let symbol = REGISTRY.get(key);
+  if (symbol) return symbol;
+  const raw = RAW_MAP[key];
+  if (raw) {
+    symbol = parseSvg(raw) || void 0;
     if (symbol) {
-      console.log(`[material-symbols-svg] getSymbol: found "${key}"`);
-    } else {
-      console.warn(`[material-symbols-svg] getSymbol: NOT found "${key}"`);
+      REGISTRY.set(key, symbol);
+      if (IS_DEV) {
+        console.log(`[material-symbols-svg] getSymbol: parsed and cached "${key}"`);
+      }
+      return symbol;
     }
   }
-  return symbol;
+  if (IS_DEV) {
+    console.warn(`[material-symbols-svg] getSymbol: NOT found "${key}"`);
+  }
+  return void 0;
 }
 function defineIcons(symbols, custom, defaults) {
   if (IS_DEV) {

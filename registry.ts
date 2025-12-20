@@ -25,39 +25,25 @@ export interface SymbolKey {
   size: number; // optical size in px
 }
 
-// Internal registry map
-const REGISTRY = new Map<string, SymbolSvg>(); // symbols (file-based)
+// Internal registry map (parsed cache)
+const REGISTRY = new Map<string, SymbolSvg>();
+let RAW_MAP: Record<string, string> = {};
 
 const IS_DEV = (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production') || 
                (typeof (import.meta as any).env !== 'undefined' && (import.meta as any).env.DEV);
 
-// Eagerly load all Symbols SVGs as raw strings at build time
+// Eagerly load the registry map in browser/Vite environments
 if (typeof window !== 'undefined' || (globalThis as any).VITE_CLIENT) {
   // @ts-ignore
   import('./registry-map.js').then(m => {
-    const symbolFiles = (m.default || {}) as Record<string, string>;
-    const keys = Object.keys(symbolFiles);
+    RAW_MAP = m.default || {};
     if (IS_DEV) {
-      console.log(`[material-symbols-svg] Loading registry-map.js with ${keys.length} symbols`);
-    }
-    // Build the symbols registry
-    let count = 0;
-    for (const [pathName, rawSvg] of Object.entries(symbolFiles)) {
-      const meta = parseFilename(pathName);
-      if (!meta) continue;
-      const parsed = parseSvg(rawSvg);
-      if (!parsed) continue;
-      REGISTRY.set(keyOf(meta), parsed);
-      count++;
-    }
-    if (IS_DEV) {
-      console.log(`[material-symbols-svg] Registry populated with ${count} symbols`);
+      console.log(`[material-symbols-svg] registry-map.js loaded with ${Object.keys(RAW_MAP).length} symbols`);
     }
   }).catch((err) => {
     if (IS_DEV) {
       console.error('[material-symbols-svg] Failed to load registry-map.js', err);
     }
-    // registry-map.js might not exist or fail to load in non-browser environments
   });
 }
 
@@ -69,51 +55,6 @@ function keyOf(k: SymbolKey): string {
   return `${k.theme}::${k.icon}::${k.fill}::${k.weight}::${k.size}`;
 }
 
-function parseFilename(filePath: string): SymbolKey | null {
-  // Example: rounded/folder.w200.s24.svg or folder-fill.w200.s24.svg
-  // Custom example: custom/spark/24
-  const normalized = filePath.replace(/\\/g, '/');
-
-  if (normalized.startsWith('custom/')) {
-    const parts = normalized.split('/');
-    if (parts.length < 3) return null;
-    const icon = parts[1];
-    const size = Number(parts[2]);
-    if (isNaN(size)) return null;
-    return {
-      theme: DEFAULT_THEME,
-      icon,
-      fill: DEFAULT_FILL,
-      weight: DEFAULT_WEIGHT,
-      size,
-    };
-  }
-
-  const m = normalized.match(/(rounded|outlined|sharp)\/([^/]+)\.svg$/);
-  if (!m) return null;
-  const theme = m[1] as Theme;
-  const filename = m[2];
-  const [base, ...suffixes] = filename.split('.');
-  let icon = base;
-  let fill: 0 | 1 = 0;
-  if (base.endsWith('-fill')) {
-    icon = base.slice(0, -'-fill'.length);
-    fill = 1;
-  }
-  let weight = 400;
-  let size = 24;
-  for (const s of suffixes) {
-    if (s.startsWith('w')) {
-      const n = Number(s.slice(1));
-      if (Number.isFinite(n)) weight = n;
-    } else if (s.startsWith('s')) {
-      const n = Number(s.slice(1));
-      if (Number.isFinite(n)) size = n;
-    }
-  }
-  return { theme, icon, fill, weight, size };
-}
-
 function parseSvg(svg: string): SymbolSvg | null {
   const viewBoxMatch = svg.match(/viewBox="([^"]+)"/i);
   const pathMatch = svg.match(/<path[^>]*\sd="([^"]+)"[^>]*>/i);
@@ -121,20 +62,30 @@ function parseSvg(svg: string): SymbolSvg | null {
   return { viewBox: viewBoxMatch[1], d: pathMatch[1] };
 }
 
-// Build the symbols registry at module init
-// (Removed static build, moved to dynamic import above)
-
 export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
   const key = keyOf(k);
-  const symbol = REGISTRY.get(key);
-  if (IS_DEV) {
+  
+  // 1. Check parsed cache
+  let symbol = REGISTRY.get(key);
+  if (symbol) return symbol;
+
+  // 2. Check raw map
+  const raw = RAW_MAP[key];
+  if (raw) {
+    symbol = parseSvg(raw) || undefined;
     if (symbol) {
-      console.log(`[material-symbols-svg] getSymbol: found "${key}"`);
-    } else {
-      console.warn(`[material-symbols-svg] getSymbol: NOT found "${key}"`);
+      REGISTRY.set(key, symbol);
+      if (IS_DEV) {
+        console.log(`[material-symbols-svg] getSymbol: parsed and cached "${key}"`);
+      }
+      return symbol;
     }
   }
-  return symbol;
+
+  if (IS_DEV) {
+    console.warn(`[material-symbols-svg] getSymbol: NOT found "${key}"`);
+  }
+  return undefined;
 }
 
 export type IconConfig = {
