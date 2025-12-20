@@ -229,11 +229,20 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
       }
     }
     for (const [icon, sizesObj] of Object.entries(iconsDef.Custom || {})) {
-      for (const [sizeKey, value] of Object.entries(sizesObj || {})) {
+      for (const [sizeKey, val] of Object.entries(sizesObj || {})) {
+        let value = val;
+        if (value && typeof value === "object" && "then" in value && typeof value.then === "function") {
+          value = await value;
+        }
         if (typeof value === "string" && (value.startsWith("./") || value.startsWith("../"))) {
           const varName = `i${i++}`;
           imports.push(`import ${varName} from '${value}?raw';`);
           mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${varName},`);
+        } else if (value) {
+          const content = typeof value === "object" && "default" in value ? value.default : value;
+          if (typeof content === "string") {
+            mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${JSON.stringify(content)},`);
+          }
         }
       }
     }
@@ -304,7 +313,7 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
       const srcPluginDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dist", "src", "plugin");
       const srcConsumerDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dist", "src", "consumer");
       const versionsFile = path.resolve(tempDir, "versions.json");
-      const iconsTsFile = path.resolve(srcPluginDir, "icons.ts");
+      const iconsTsFile = path.resolve(srcPluginDir, "icons.d.ts");
       const loaderTypesFile = path.resolve(srcConsumerDir, "loader-types.d.ts");
       const loaderMapFile = path.resolve(distDir, "loader-map.js");
       await ensureDir(tempDir);

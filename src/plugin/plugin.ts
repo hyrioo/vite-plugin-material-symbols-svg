@@ -68,7 +68,7 @@ export function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialSymbolsPl
             const versionsFile = path.resolve(tempDir, 'versions.json');
 
             // These are the new consumer files
-            const iconsTsFile = path.resolve(srcPluginDir, 'icons.ts');
+            const iconsTsFile = path.resolve(srcPluginDir, 'icons.d.ts');
             const loaderTypesFile = path.resolve(srcConsumerDir, 'loader-types.d.ts');
             const loaderMapFile = path.resolve(distDir, 'loader-map.js');
 

@@ -122,13 +122,27 @@ export async function generateConsumerFiles(
             }
         }
 
-        // Add custom icons to the map if they are relative paths
+        // Add custom icons to the map
         for (const [icon, sizesObj] of Object.entries(iconsDef.Custom || {})) {
-            for (const [sizeKey, value] of Object.entries(sizesObj as any || {})) {
+            for (const [sizeKey, val] of Object.entries(sizesObj as any || {})) {
+                let value = val;
+                if (value && typeof value === 'object' && 'then' in value && typeof (value as any).then === 'function') {
+                    value = await value;
+                }
+
                 if (typeof value === 'string' && (value.startsWith('./') || value.startsWith('../'))) {
                     const varName = `i${i++}`;
                     imports.push(`import ${varName} from '${value}?raw';`);
                     mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${varName},`);
+                } else if (value) {
+                    // It's already imported or literal content
+                    const content = (typeof value === 'object' && 'default' in value)
+                        ? (value as any).default
+                        : value;
+
+                    if (typeof content === 'string') {
+                        mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${JSON.stringify(content)},`);
+                    }
                 }
             }
         }
