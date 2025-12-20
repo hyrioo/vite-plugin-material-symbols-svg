@@ -1,5 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
+import { n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique } from "./utils-Bn2O7Hbn.js";
 async function exists$1(p) {
   try {
     await fs.access(p);
@@ -156,28 +157,17 @@ async function downloadSymbols(tasks, concurrency, logger) {
   });
   return { saved, skipped, failed };
 }
-function unique(arr) {
-  return Array.from(new Set(arr));
-}
-function normalizeNums(input, fallback) {
-  const src = input && input.length ? input : fallback;
-  return unique(Array.from(src).map((n) => Number(n)).filter((n) => Number.isFinite(n)));
-}
-function normalizeFills(input, fallback) {
-  const src = input && input.length ? input : fallback;
-  const arr = Array.from(src).map((v) => {
-    if (v === true) return 1;
-    if (v === false) return 0;
-    const n = Number(v);
-    return n === 1 ? 1 : 0;
-  });
-  return unique(arr);
-}
-function normalizeThemes(input, fallback) {
-  const src = input && input.length ? input : fallback;
-  const allowed = ["rounded", "outlined", "sharp"];
-  const arr = Array.from(src).map((t) => String(t)).filter((t) => allowed.includes(t));
-  return unique(arr);
+function defineIcons(symbols, custom, defaults) {
+  {
+    const symbolCount = Object.keys(symbols || {}).length;
+    const customCount = Object.keys(custom || {}).length;
+    console.log(`[material-symbols-svg] defineIcons: symbols=${symbolCount}, custom=${customCount}`);
+  }
+  return {
+    Symbols: symbols,
+    Custom: custom ?? {},
+    Default: defaults ?? void 0
+  };
 }
 const IconDefaultConfig = {
   sizes: [20, 24, 40, 48],
@@ -243,7 +233,7 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
         if (typeof value === "string" && (value.startsWith("./") || value.startsWith("../"))) {
           const varName = `i${i++}`;
           imports.push(`import ${varName} from '${value}?raw';`);
-          mapEntries.push(`  'rounded::${icon}::0::200::${sizeKey}': ${varName},`);
+          mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${varName},`);
         }
       }
     }
@@ -310,9 +300,10 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
       if (!options.enabled) return;
       const tempDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", ".temp");
       const outBase = path.resolve(tempDir, "symbols");
-      const srcConsumerDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dost", "src", "consumer");
+      const srcPluginDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dist", "src", "plugin");
+      const srcConsumerDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dist", "src", "consumer");
       const versionsFile = path.resolve(tempDir, "versions.json");
-      const iconsTsFile = path.resolve(srcConsumerDir, "icons.ts");
+      const iconsTsFile = path.resolve(srcPluginDir, "icons.ts");
       const loaderTypesFile = path.resolve(srcConsumerDir, "loader-types.d.ts");
       const loaderMapFile = path.resolve(srcConsumerDir, "loader-map.js");
       await ensureDir(tempDir);
@@ -349,6 +340,7 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
   };
 }
 export {
+  defineIcons,
   materialSymbolsSvg
 };
 //# sourceMappingURL=index.js.map

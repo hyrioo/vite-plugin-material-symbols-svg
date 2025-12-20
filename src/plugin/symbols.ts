@@ -1,6 +1,5 @@
 import fs from 'node:fs/promises';
-
-export type Theme = 'rounded' | 'outlined' | 'sharp';
+import { type Theme } from '../shared/types';
 
 async function exists(p: string) {
     try {

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 const path = require("node:path");
 const fs = require("node:fs/promises");
+const utils = require("./utils-DIvLxux2.cjs");
 async function exists$1(p) {
   try {
     await fs.access(p);
@@ -158,28 +159,17 @@ async function downloadSymbols(tasks, concurrency, logger) {
   });
   return { saved, skipped, failed };
 }
-function unique(arr) {
-  return Array.from(new Set(arr));
-}
-function normalizeNums(input, fallback) {
-  const src = input && input.length ? input : fallback;
-  return unique(Array.from(src).map((n) => Number(n)).filter((n) => Number.isFinite(n)));
-}
-function normalizeFills(input, fallback) {
-  const src = input && input.length ? input : fallback;
-  const arr = Array.from(src).map((v) => {
-    if (v === true) return 1;
-    if (v === false) return 0;
-    const n = Number(v);
-    return n === 1 ? 1 : 0;
-  });
-  return unique(arr);
-}
-function normalizeThemes(input, fallback) {
-  const src = input && input.length ? input : fallback;
-  const allowed = ["rounded", "outlined", "sharp"];
-  const arr = Array.from(src).map((t) => String(t)).filter((t) => allowed.includes(t));
-  return unique(arr);
+function defineIcons(symbols, custom, defaults) {
+  {
+    const symbolCount = Object.keys(symbols || {}).length;
+    const customCount = Object.keys(custom || {}).length;
+    console.log(`[material-symbols-svg] defineIcons: symbols=${symbolCount}, custom=${customCount}`);
+  }
+  return {
+    Symbols: symbols,
+    Custom: custom ?? {},
+    Default: defaults ?? void 0
+  };
 }
 const IconDefaultConfig = {
   sizes: [20, 24, 40, 48],
@@ -222,14 +212,14 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
     const defaults = iconsDef.Default ?? {};
     let i = 0;
     for (const [icon, meta] of Object.entries(iconsDef.Symbols || {})) {
-      const sizes = normalizeNums(meta.sizes ?? defaults.sizes, IconDefaultConfig.sizes);
-      const weights = normalizeNums(meta.weights ?? defaults.weights, IconDefaultConfig.weights);
-      const fills = normalizeFills(meta.fills ?? defaults.fills, IconDefaultConfig.fills);
-      const themes = normalizeThemes(meta.themes ?? defaults.themes, IconDefaultConfig.themes);
-      for (const theme of unique(themes)) {
-        for (const weight of unique(weights)) {
-          for (const fill of unique(fills)) {
-            for (const size of unique(sizes)) {
+      const sizes = utils.normalizeNums(meta.sizes ?? defaults.sizes, IconDefaultConfig.sizes);
+      const weights = utils.normalizeNums(meta.weights ?? defaults.weights, IconDefaultConfig.weights);
+      const fills = utils.normalizeFills(meta.fills ?? defaults.fills, IconDefaultConfig.fills);
+      const themes = utils.normalizeThemes(meta.themes ?? defaults.themes, IconDefaultConfig.themes);
+      for (const theme of utils.unique(themes)) {
+        for (const weight of utils.unique(weights)) {
+          for (const fill of utils.unique(fills)) {
+            for (const size of utils.unique(sizes)) {
               const filename = toFilename(icon, fill, weight, size);
               const importPath = `/symbols/${theme}/${filename}?raw`;
               const varName = `i${i++}`;
@@ -245,7 +235,7 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
         if (typeof value === "string" && (value.startsWith("./") || value.startsWith("../"))) {
           const varName = `i${i++}`;
           imports.push(`import ${varName} from '${value}?raw';`);
-          mapEntries.push(`  'rounded::${icon}::0::200::${sizeKey}': ${varName},`);
+          mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${varName},`);
         }
       }
     }
@@ -312,9 +302,10 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
       if (!options.enabled) return;
       const tempDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", ".temp");
       const outBase = path.resolve(tempDir, "symbols");
-      const srcConsumerDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dost", "src", "consumer");
+      const srcPluginDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dist", "src", "plugin");
+      const srcConsumerDir = path.resolve(root, "node_modules", "@hyrioo", "vite-plugin-material-symbols-svg", "dist", "src", "consumer");
       const versionsFile = path.resolve(tempDir, "versions.json");
-      const iconsTsFile = path.resolve(srcConsumerDir, "icons.ts");
+      const iconsTsFile = path.resolve(srcPluginDir, "icons.ts");
       const loaderTypesFile = path.resolve(srcConsumerDir, "loader-types.d.ts");
       const loaderMapFile = path.resolve(srcConsumerDir, "loader-map.js");
       await ensureDir(tempDir);
@@ -324,15 +315,15 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
       const defaults = iconsDef.Default ?? {};
       const tasks = [];
       for (const [icon, meta] of Object.entries(iconsMap)) {
-        const sizes = normalizeNums(meta.sizes ?? defaults.sizes, IconDefaultConfig.sizes);
-        const weights = normalizeNums(meta.weights ?? defaults.weights, IconDefaultConfig.weights);
-        const fills = normalizeFills(meta.fills ?? defaults.fills, IconDefaultConfig.fills);
-        const themes = normalizeThemes(meta.themes ?? defaults.themes, IconDefaultConfig.themes);
-        for (const theme of unique(themes)) {
+        const sizes = utils.normalizeNums(meta.sizes ?? defaults.sizes, IconDefaultConfig.sizes);
+        const weights = utils.normalizeNums(meta.weights ?? defaults.weights, IconDefaultConfig.weights);
+        const fills = utils.normalizeFills(meta.fills ?? defaults.fills, IconDefaultConfig.fills);
+        const themes = utils.normalizeThemes(meta.themes ?? defaults.themes, IconDefaultConfig.themes);
+        for (const theme of utils.unique(themes)) {
           await ensureDir(path.resolve(outBase, theme));
-          for (const weight of unique(weights)) {
-            for (const fill of unique(fills)) {
-              for (const size of unique(sizes)) {
+          for (const weight of utils.unique(weights)) {
+            for (const fill of utils.unique(fills)) {
+              for (const size of utils.unique(sizes)) {
                 const axes = axesString(weight, fill);
                 const url = buildSymbolUrl(theme, icon, axes, size);
                 const file = path.resolve(outBase, theme, toFilename(icon, fill, weight, size));
@@ -350,5 +341,6 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
     }
   };
 }
+exports.defineIcons = defineIcons;
 exports.materialSymbolsSvg = materialSymbolsSvg;
 //# sourceMappingURL=index.cjs.map

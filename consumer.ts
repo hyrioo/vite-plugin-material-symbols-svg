@@ -1,5 +1,4 @@
 export {
-    defineIcons,
     getSymbol,
 } from './src/consumer/loader';
 export type {
@@ -12,5 +11,4 @@ export type {
     SymbolKey,
     SymbolSvg,
 } from './src/consumer/loader';
-export type { MaterialSymbolIcon } from './src/consumer/icons';
 export type { IconKey } from './src/consumer/loader-types';

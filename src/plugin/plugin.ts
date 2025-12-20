@@ -2,16 +2,10 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 import type { Plugin } from 'vite';
 import { fetchVersions } from './meta';
-import { axesString, buildSymbolUrl, downloadSymbols, Theme, toFilename } from './symbols';
-import {
-    generateConsumerFiles,
-    IconDefaultConfig,
-    IconsInput,
-    normalizeFills,
-    normalizeNums,
-    normalizeThemes,
-    unique,
-} from './registry';
+import { axesString, buildSymbolUrl, downloadSymbols, toFilename } from './symbols';
+import { type DefinedIcons as IconsInput, generateConsumerFiles, IconConfig, IconDefaultConfig } from './registry';
+import { Theme } from '../shared/types';
+import { normalizeFills, normalizeNums, normalizeThemes, unique } from '../shared/utils';
 
 export interface MaterialSymbolsPluginOptions {
     concurrency?: number;
@@ -23,7 +17,7 @@ async function ensureDir(dir: string) {
     await fs.mkdir(dir, {recursive: true});
 }
 
-export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialSymbolsPluginOptions = {}): Plugin {
+export function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialSymbolsPluginOptions = {}): Plugin {
     const options = {
         concurrency: opts.concurrency ?? 8,
         strict: opts.strict ?? false,
@@ -67,12 +61,13 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
 
             const tempDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', '.temp');
             const outBase = path.resolve(tempDir, 'symbols');
-            const srcConsumerDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', 'dost', 'src', 'consumer');
+            const srcPluginDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', 'dist', 'src', 'plugin');
+            const srcConsumerDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', 'dist', 'src', 'consumer');
 
             const versionsFile = path.resolve(tempDir, 'versions.json');
 
             // These are the new consumer files
-            const iconsTsFile = path.resolve(srcConsumerDir, 'icons.ts');
+            const iconsTsFile = path.resolve(srcPluginDir, 'icons.ts');
             const loaderTypesFile = path.resolve(srcConsumerDir, 'loader-types.d.ts');
             const loaderMapFile = path.resolve(srcConsumerDir, 'loader-map.js');
 
@@ -86,7 +81,7 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
 
             // 3. Prepare download tasks
             const iconsMap = iconsDef.Symbols;
-            const defaults = iconsDef.Default ?? {};
+            const defaults: Partial<IconConfig> = iconsDef.Default ?? {};
             const tasks: {url: string; file: string}[] = [];
 
             for (const [icon, meta] of Object.entries(iconsMap)) {

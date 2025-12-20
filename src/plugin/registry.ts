@@ -1,49 +1,50 @@
 import fs from 'node:fs/promises';
 import type { PluginContext } from 'rollup';
 import { toFilename } from './symbols';
+import {
+    type DefineCustomMap,
+    type DefinedIcons,
+    type Fill,
+    type IconConfig,
+    type OpticalSize,
+    type SymbolKey,
+    type SymbolSvg,
+    type Theme,
+    type Weight,
+} from '../shared/types';
+import { normalizeFills, normalizeNums, normalizeThemes, unique } from '../shared/utils';
+import { MaterialSymbolIcon } from './icons';
 
-export type Theme = 'rounded' | 'outlined' | 'sharp';
+export type { OpticalSize, Weight, Fill, Theme, SymbolKey, SymbolSvg, IconConfig, DefinedIcons, DefineCustomMap };
 
-export interface IconsInput {
-    Symbols: Record<string, {
-        sizes?: readonly number[];
-        weights?: readonly number[];
-        fills?: readonly (boolean | 0 | 1)[];
-        themes?: readonly Theme[]
-    }>;
-    Custom?: Record<string, any>;
-    Default?: any;
-}
+const IS_DEV = true;
 
-export function unique<T>(arr: T[]): T[] {
-    return Array.from(new Set(arr));
-}
+/**
+ * defineIcons
+ * - symbols: the Material Symbols configuration per icon
+ * - custom: optional custom icons map
+ * - defaults: optional default config applied to all symbol entries
+ */
+export function defineIcons<
+    S extends Partial<Record<MaterialSymbolIcon, Partial<IconConfig>>>,
+    C extends DefineCustomMap = Record<never, never>,
+    D extends Partial<IconConfig> | undefined = undefined
+>(
+    symbols: S,
+    custom?: C,
+    defaults?: D,
+): DefinedIcons {
+    if (IS_DEV) {
+        const symbolCount = Object.keys(symbols || {}).length;
+        const customCount = Object.keys(custom || {}).length;
+        console.log(`[material-symbols-svg] defineIcons: symbols=${symbolCount}, custom=${customCount}`);
+    }
 
-export function normalizeNums(input: readonly unknown[] | undefined, fallback: readonly number[]): number[] {
-    const src = input && input.length ? input : fallback;
-    return unique(Array.from(src as readonly unknown[])
-        .map((n) => Number(n))
-        .filter((n) => Number.isFinite(n))) as number[];
-}
-
-export function normalizeFills(input: readonly (boolean | 0 | 1)[] | undefined, fallback: readonly (0 | 1)[]): (0 | 1)[] {
-    const src = input && input.length ? input : fallback;
-    const arr = Array.from(src).map((v) => {
-        if (v === true) return 1;
-        if (v === false) return 0;
-        const n = Number(v);
-        return n === 1 ? 1 : 0;
-    }) as (0 | 1)[];
-    return unique(arr) as (0 | 1)[];
-}
-
-export function normalizeThemes(input: readonly unknown[] | undefined, fallback: readonly Theme[]): Theme[] {
-    const src = input && input.length ? input : fallback;
-    const allowed: Theme[] = ['rounded', 'outlined', 'sharp'];
-    const arr = Array.from(src as readonly unknown[])
-        .map((t) => String(t) as Theme)
-        .filter((t): t is Theme => allowed.includes(t));
-    return unique(arr);
+    return {
+        Symbols: symbols as any,
+        Custom: (custom ?? ({} as C)),
+        Default: (defaults ?? (undefined as D)),
+    } as const;
 }
 
 export const IconDefaultConfig = {
@@ -55,7 +56,7 @@ export const IconDefaultConfig = {
 
 export async function generateConsumerFiles(
     ctx: PluginContext,
-    iconsDef: IconsInput,
+    iconsDef: DefinedIcons,
     loaderTypesFile: string,
     loaderMapFile: string,
     distDir: string,
@@ -73,17 +74,19 @@ export async function generateConsumerFiles(
             : 'string';
         const typeContent = `${banner}export type IconKey = ${keyUnion};\n`;
 
-        await fs.mkdir(distDir, { recursive: true });
+        await fs.mkdir(distDir, {recursive: true});
 
         let existing = '';
         try {
             existing = await fs.readFile(loaderTypesFile, 'utf-8');
-        } catch { }
+        } catch {
+        }
 
         if (existing !== typeContent) {
             await fs.writeFile(loaderTypesFile, typeContent);
             const now = new Date();
-            await fs.utimes(loaderTypesFile, now, now).catch(() => { });
+            await fs.utimes(loaderTypesFile, now, now).catch(() => {
+            });
         }
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
@@ -95,7 +98,7 @@ export async function generateConsumerFiles(
         ctx.warn(`[material-symbols-svg] Generate loader-map.js`);
         const imports: string[] = [];
         const mapEntries: string[] = [];
-        const defaults = iconsDef.Default ?? {};
+        const defaults: Partial<IconConfig> = iconsDef.Default ?? {};
 
         let i = 0;
         for (const [icon, meta] of Object.entries(iconsDef.Symbols || {})) {
@@ -125,7 +128,7 @@ export async function generateConsumerFiles(
                 if (typeof value === 'string' && (value.startsWith('./') || value.startsWith('../'))) {
                     const varName = `i${i++}`;
                     imports.push(`import ${varName} from '${value}?raw';`);
-                    mapEntries.push(`  'rounded::${icon}::0::200::${sizeKey}': ${varName},`);
+                    mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${varName},`);
                 }
             }
         }
@@ -135,12 +138,14 @@ export async function generateConsumerFiles(
         let existing = '';
         try {
             existing = await fs.readFile(loaderMapFile, 'utf-8');
-        } catch { }
+        } catch {
+        }
 
         if (existing !== mapContent) {
             await fs.writeFile(loaderMapFile, mapContent);
             const now = new Date();
-            await fs.utimes(loaderMapFile, now, now).catch(() => { });
+            await fs.utimes(loaderMapFile, now, now).catch(() => {
+            });
         }
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
