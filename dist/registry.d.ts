@@ -25,7 +25,11 @@ export type IconConfig = {
  * A type that hints to the IDE that the string is a relative file path.
  */
 type RelativePath = `./${string}` | `../${string}`;
-export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown | RelativePath>>>>;
+export type DefineCustomMap = Record<string, Partial<Readonly<Record<OpticalSize, unknown | RelativePath | Promise<{
+    default: string;
+}> | {
+    default: string;
+}>>>>;
 /**
  * defineIcons
  * - symbols: the Material Symbols configuration per icon

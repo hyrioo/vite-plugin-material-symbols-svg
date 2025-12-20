@@ -34,7 +34,7 @@ export type IconsInput = {
         fills?: readonly (boolean | 0 | 1)[];
         themes?: readonly ('rounded' | 'outlined' | 'sharp')[]
     }>;
-    Custom?: Record<string, Partial<Readonly<Record<number, unknown | `./${string}` | `../${string}`>>>>;
+    Custom?: Record<string, Partial<Readonly<Record<number, unknown | `./${string}` | `../${string}` | Promise<{ default: string }> | { default: string }>>>>;
     Default?: Partial<IconConfig>;
 };
 

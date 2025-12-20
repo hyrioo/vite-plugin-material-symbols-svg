@@ -457,6 +457,43 @@ function defineIcons(symbols, custom, defaults) {
     const customCount = Object.keys(custom || {}).length;
     console.log(`[material-symbols-svg] defineIcons: symbols=${symbolCount}, custom=${customCount}`);
   }
+  if (custom && (typeof window !== "undefined" || globalThis.VITE_CLIENT)) {
+    for (const [icon, sizes] of Object.entries(custom)) {
+      for (const [sizeStr, value] of Object.entries(sizes || {})) {
+        const size = Number(sizeStr);
+        const key = {
+          icon,
+          theme: DEFAULT_THEME,
+          fill: DEFAULT_FILL,
+          weight: DEFAULT_WEIGHT,
+          size
+        };
+        const handleSvg = (raw) => {
+          const svgString = typeof raw === "string" ? raw : raw == null ? void 0 : raw.default;
+          if (svgString && typeof svgString === "string") {
+            const parsed = parseSvg(svgString);
+            if (parsed) {
+              REGISTRY.set(keyOf(key), parsed);
+              if (IS_DEV) {
+                console.log(`[material-symbols-svg] Custom icon registered: ${keyOf(key)}`);
+              }
+            }
+          }
+        };
+        if (value instanceof Promise) {
+          value.then(handleSvg).catch((err) => {
+            if (IS_DEV) {
+              console.error(`[material-symbols-svg] Failed to load custom icon: ${icon} (${size})`, err);
+            }
+          });
+        } else if (value && typeof value === "object" && "default" in value) {
+          handleSvg(value);
+        } else if (typeof value === "string" && value.includes("<svg")) {
+          handleSvg(value);
+        }
+      }
+    }
+  }
   return {
     Symbols: symbols,
     Custom: custom ?? {},

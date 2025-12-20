@@ -154,7 +154,7 @@ type RelativePath = `./${string}` | `../${string}`;
 // Example: { spark: { 24: svg24 }, brand: { 20: svg20, 40: svg40 } }
 export type DefineCustomMap = Record<
   string,
-  Partial<Readonly<Record<OpticalSize, unknown | RelativePath>>>
+  Partial<Readonly<Record<OpticalSize, unknown | RelativePath | Promise<{ default: string }> | { default: string }>>>
 >;
 /**
  * defineIcons
@@ -172,6 +172,48 @@ export function defineIcons<
     const customCount = Object.keys(custom || {}).length;
     console.log(`[material-symbols-svg] defineIcons: symbols=${symbolCount}, custom=${customCount}`);
   }
+
+  // Register custom icons if they are provided as modules or promises
+  if (custom && (typeof window !== 'undefined' || (globalThis as any).VITE_CLIENT)) {
+    for (const [icon, sizes] of Object.entries(custom)) {
+      for (const [sizeStr, value] of Object.entries(sizes || {})) {
+        const size = Number(sizeStr) as OpticalSize;
+        const key: SymbolKey = {
+          icon,
+          theme: DEFAULT_THEME,
+          fill: DEFAULT_FILL,
+          weight: DEFAULT_WEIGHT,
+          size,
+        };
+
+        const handleSvg = (raw: unknown) => {
+          const svgString = (typeof raw === 'string' ? raw : (raw as any)?.default) as string;
+          if (svgString && typeof svgString === 'string') {
+            const parsed = parseSvg(svgString);
+            if (parsed) {
+              REGISTRY.set(keyOf(key), parsed);
+              if (IS_DEV) {
+                console.log(`[material-symbols-svg] Custom icon registered: ${keyOf(key)}`);
+              }
+            }
+          }
+        };
+
+        if (value instanceof Promise) {
+          value.then(handleSvg).catch(err => {
+            if (IS_DEV) {
+              console.error(`[material-symbols-svg] Failed to load custom icon: ${icon} (${size})`, err);
+            }
+          });
+        } else if (value && typeof value === 'object' && 'default' in value) {
+          handleSvg(value);
+        } else if (typeof value === 'string' && value.includes('<svg')) {
+          handleSvg(value);
+        }
+      }
+    }
+  }
+
   return {
     Symbols: symbols,
     Custom: (custom ?? ({} as C)),
