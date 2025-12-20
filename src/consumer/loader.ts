@@ -23,7 +23,7 @@ export interface SymbolKey {
   size: number; // optical size in px
 }
 
-import RAW_MAP from './loader-map';
+import RAW_MAP from './loader-map.js';
 
 // Internal registry map (parsed cache)
 const REGISTRY = new Map<string, SymbolSvg>();

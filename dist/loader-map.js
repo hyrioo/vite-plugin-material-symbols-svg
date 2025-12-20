@@ -1,4 +1,4 @@
 "use strict";
-const map = {};
-module.exports = map;
+const RAW_MAP = {};
+module.exports = RAW_MAP;
 //# sourceMappingURL=loader-map.js.map

@@ -5,7 +5,7 @@ export default defineConfig({
     lib: {
       entry: {
         index: 'index.ts',
-        'loader-map': 'src/consumer/loader-map.ts',
+        'loader-map': 'src/consumer/loader-map.js',
       },
       name: 'VitePluginMaterialSymbolsSvg',
       formats: ['es', 'cjs'],
@@ -17,7 +17,7 @@ export default defineConfig({
     rollupOptions: {
       external: [
         'vite',
-        './loader-map.js',
+        './src/consumer/loader-map.ts',
         // Node built-ins that might be referenced by plugin utilities
         'node:fs',
         'node:fs/promises',

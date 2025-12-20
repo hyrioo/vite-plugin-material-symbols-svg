@@ -217,7 +217,7 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
     ctx.warn(`[material-symbols-svg] Failed to write loader-types.ts: ${msg}`);
   }
   try {
-    ctx.warn(`[material-symbols-svg] Generate loader-map.ts`);
+    ctx.warn(`[material-symbols-svg] Generate loader-map.js`);
     const imports = [];
     const mapEntries = [];
     const defaults = iconsDef.Default ?? {};
@@ -269,7 +269,7 @@ ${mapEntries.join("\n")}
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    ctx.warn(`[material-symbols-svg] Failed to write loader-map.ts: ${msg}`);
+    ctx.warn(`[material-symbols-svg] Failed to write loader-map.js: ${msg}`);
   }
 }
 async function ensureDir(dir) {
@@ -317,7 +317,7 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
       const versionsFile = path.resolve(tempDir, "versions.json");
       const iconsTsFile = path.resolve(srcConsumerDir, "icons.ts");
       const loaderTypesFile = path.resolve(srcConsumerDir, "loader-types.ts");
-      const loaderMapFile = path.resolve(srcConsumerDir, "loader-map.ts");
+      const loaderMapFile = path.resolve(srcConsumerDir, "loader-map.js");
       await ensureDir(tempDir);
       await fetchVersions(this, versionsFile, iconsTsFile, { strict: options.strict });
       await generateConsumerFiles(this, iconsDef, loaderTypesFile, loaderMapFile, srcConsumerDir);

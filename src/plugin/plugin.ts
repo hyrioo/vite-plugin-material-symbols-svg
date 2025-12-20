@@ -74,14 +74,14 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
             // These are the new consumer files
             const iconsTsFile = path.resolve(srcConsumerDir, 'icons.ts');
             const loaderTypesFile = path.resolve(srcConsumerDir, 'loader-types.ts');
-            const loaderMapFile = path.resolve(srcConsumerDir, 'loader-map.ts');
+            const loaderMapFile = path.resolve(srcConsumerDir, 'loader-map.js');
 
             await ensureDir(tempDir);
 
             // 1. Fetch metadata and generate icons.ts
             await fetchVersions(this, versionsFile, iconsTsFile, {strict: options.strict});
 
-            // 2. Generate consumer loader files (loader-types.ts, loader-map.ts)
+            // 2. Generate consumer loader files (loader-types.ts, loader-map.js)
             await generateConsumerFiles(this, iconsDef, loaderTypesFile, loaderMapFile, srcConsumerDir);
 
             // 3. Prepare download tasks

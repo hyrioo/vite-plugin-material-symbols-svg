@@ -90,9 +90,9 @@ export async function generateConsumerFiles(
         ctx.warn(`[material-symbols-svg] Failed to write loader-types.ts: ${msg}`);
     }
 
-    // 2. Generate loader-map.ts
+    // 2. Generate loader-map.js
     try {
-        ctx.warn(`[material-symbols-svg] Generate loader-map.ts`);
+        ctx.warn(`[material-symbols-svg] Generate loader-map.js`);
         const imports: string[] = [];
         const mapEntries: string[] = [];
         const defaults = iconsDef.Default ?? {};
@@ -144,6 +144,6 @@ export async function generateConsumerFiles(
         }
     } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        ctx.warn(`[material-symbols-svg] Failed to write loader-map.ts: ${msg}`);
+        ctx.warn(`[material-symbols-svg] Failed to write loader-map.js: ${msg}`);
     }
 }
