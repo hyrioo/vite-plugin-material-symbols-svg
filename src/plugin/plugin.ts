@@ -67,13 +67,13 @@ export default function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialS
 
             const tempDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', '.temp');
             const outBase = path.resolve(tempDir, 'symbols');
-            const srcConsumerDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', 'src', 'consumer');
+            const srcConsumerDir = path.resolve(root, 'node_modules', '@hyrioo', 'vite-plugin-material-symbols-svg', 'dost', 'src', 'consumer');
 
             const versionsFile = path.resolve(tempDir, 'versions.json');
 
             // These are the new consumer files
             const iconsTsFile = path.resolve(srcConsumerDir, 'icons.ts');
-            const loaderTypesFile = path.resolve(srcConsumerDir, 'loader-types.ts');
+            const loaderTypesFile = path.resolve(srcConsumerDir, 'loader-types.d.ts');
             const loaderMapFile = path.resolve(srcConsumerDir, 'loader-map.js');
 
             await ensureDir(tempDir);

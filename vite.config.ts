@@ -5,6 +5,7 @@ export default defineConfig({
     lib: {
       entry: {
         index: 'index.ts',
+        consumer: 'consumer.ts',
         'loader-map': 'src/consumer/loader-map.js',
       },
       name: 'VitePluginMaterialSymbolsSvg',
