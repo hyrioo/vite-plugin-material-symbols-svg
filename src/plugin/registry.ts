@@ -12,7 +12,7 @@ import {
     type Theme,
     type Weight,
 } from '../shared/types';
-import { normalizeFills, normalizeNums, normalizeThemes, unique } from '../shared/utils';
+import { customKeyOf, normalizeFills, normalizeNums, normalizeThemes, unique } from '../shared/utils';
 import { MaterialSymbolIcon } from './icons';
 
 export type { OpticalSize, Weight, Fill, Theme, SymbolKey, SymbolSvg, IconConfig, DefinedIcons, DefineCustomMap };
@@ -27,12 +27,12 @@ const IS_DEV = true;
  */
 export function defineIcons<
     S extends Partial<Record<MaterialSymbolIcon, Partial<IconConfig>>>,
-    C extends DefineCustomMap = Record<never, never>,
-    D extends Partial<IconConfig> | undefined = undefined
+    C extends DefineCustomMap = {},
+    D extends Partial<IconConfig> = {}
 >(
     symbols: S,
-    custom?: C,
-    defaults?: D,
+    custom: C,
+    defaults: D,
 ): DefinedIcons {
     if (IS_DEV) {
         const symbolCount = Object.keys(symbols || {}).length;
@@ -43,7 +43,7 @@ export function defineIcons<
     return {
         Symbols: symbols as any,
         Custom: (custom ?? ({} as C)),
-        Default: (defaults ?? (undefined as D)),
+        Default: (defaults ?? ({} as D)),
     } as const;
 }
 
@@ -133,7 +133,8 @@ export async function generateConsumerFiles(
                 if (typeof value === 'string' && (value.startsWith('./') || value.startsWith('../'))) {
                     const varName = `i${i++}`;
                     imports.push(`import ${varName} from '${value}?raw';`);
-                    mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${varName},`);
+                    const key = customKeyOf({ icon, size: Number(sizeKey) } as any);
+                    mapEntries.push(`  '${key}': ${varName},`);
                 } else if (value) {
                     // It's already imported or literal content
                     const content = (typeof value === 'object' && 'default' in value)
@@ -141,7 +142,8 @@ export async function generateConsumerFiles(
                         : value;
 
                     if (typeof content === 'string') {
-                        mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${JSON.stringify(content)},`);
+                        const key = customKeyOf({ icon, size: Number(sizeKey) } as any);
+                        mapEntries.push(`  '${key}': ${JSON.stringify(content)},`);
                     }
                 }
             }

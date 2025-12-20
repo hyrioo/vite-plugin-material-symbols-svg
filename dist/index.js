@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import { n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique } from "./utils-Bn2O7Hbn.js";
+import { n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, c as customKeyOf } from "./utils-Jy7vWe-6.js";
 async function exists$1(p) {
   try {
     await fs.access(p);
@@ -166,7 +166,7 @@ function defineIcons(symbols, custom, defaults) {
   return {
     Symbols: symbols,
     Custom: custom ?? {},
-    Default: defaults ?? void 0
+    Default: defaults ?? {}
   };
 }
 const IconDefaultConfig = {
@@ -237,11 +237,13 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
         if (typeof value === "string" && (value.startsWith("./") || value.startsWith("../"))) {
           const varName = `i${i++}`;
           imports.push(`import ${varName} from '${value}?raw';`);
-          mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${varName},`);
+          const key = customKeyOf({ icon, size: Number(sizeKey) });
+          mapEntries.push(`  '${key}': ${varName},`);
         } else if (value) {
           const content = typeof value === "object" && "default" in value ? value.default : value;
           if (typeof content === "string") {
-            mapEntries.push(`  'custom::${icon}::_::_::${sizeKey}': ${JSON.stringify(content)},`);
+            const key = customKeyOf({ icon, size: Number(sizeKey) });
+            mapEntries.push(`  '${key}': ${JSON.stringify(content)},`);
           }
         }
       }

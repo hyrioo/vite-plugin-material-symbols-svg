@@ -12,6 +12,10 @@ export function keyOf(k: SymbolKey): string {
     return `${k.theme}::${k.icon}::${k.fill}::${k.weight}::${k.size}`;
 }
 
+export function customKeyOf(k: SymbolKey): string {
+    return `custom::${k.icon}::_::_::${k.size}`;
+}
+
 export function parseSvg(svg: string): SymbolSvg | null {
     const viewBoxMatch = svg.match(/viewBox="([^"]+)"/i);
     const pathMatch = svg.match(/<path[^>]*\sd="([^"]+)"[^>]*>/i);

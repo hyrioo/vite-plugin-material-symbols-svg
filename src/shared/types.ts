@@ -29,7 +29,6 @@ export type DefinedIcons = {
     Default?: Partial<IconConfig>;
 };
 
-
 // defineIcons helper to create strongly typed maps
 // A map of custom icons where each icon may specify any subset of optical sizes
 // Example: { spark: { 24: svg24 }, brand: { 20: svg20, 40: svg40 } }

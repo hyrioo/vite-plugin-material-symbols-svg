@@ -12,7 +12,7 @@ import {
     type Theme,
     type Weight,
 } from '../shared/types';
-import { keyOf, parseSvg } from '../shared/utils';
+import { customKeyOf, keyOf, parseSvg } from '../shared/utils';
 import RAW_MAP from './loader-map.js';
 
 // Internal registry map (parsed cache)
@@ -33,7 +33,7 @@ export type {
 };
 
 export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
-    const key = keyOf(k);
+    let key = keyOf(k);
     if (IS_DEV) {
         console.log(`[material-symbols-svg] Get symbol:`, key);
     }
@@ -43,7 +43,23 @@ export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
     if (symbol) return symbol;
 
     // 2. Check raw map
-    const raw = RAW_MAP[key];
+    let raw = RAW_MAP[key];
+
+    // 3. Fallback to custom icon key format if not found
+    if (!raw) {
+        const cKey = customKeyOf(k);
+        if (IS_DEV) {
+            console.log(`[material-symbols-svg] Get symbol (fallback to custom):`, cKey);
+        }
+        symbol = REGISTRY.get(cKey);
+        if (symbol) return symbol;
+
+        raw = RAW_MAP[cKey];
+        if (raw) {
+            key = cKey;
+        }
+    }
+
     if (raw) {
         symbol = parseSvg(raw) || undefined;
         if (symbol) {

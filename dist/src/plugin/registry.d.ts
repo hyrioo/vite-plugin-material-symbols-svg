@@ -8,7 +8,7 @@ export type { OpticalSize, Weight, Fill, Theme, SymbolKey, SymbolSvg, IconConfig
  * - custom: optional custom icons map
  * - defaults: optional default config applied to all symbol entries
  */
-export declare function defineIcons<S extends Partial<Record<MaterialSymbolIcon, Partial<IconConfig>>>, C extends DefineCustomMap = Record<never, never>, D extends Partial<IconConfig> | undefined = undefined>(symbols: S, custom?: C, defaults?: D): DefinedIcons;
+export declare function defineIcons<S extends Partial<Record<MaterialSymbolIcon, Partial<IconConfig>>>, C extends DefineCustomMap = {}, D extends Partial<IconConfig> = {}>(symbols: S, custom: C, defaults: D): DefinedIcons;
 export declare const IconDefaultConfig: {
     sizes: readonly [20, 24, 40, 48];
     weights: readonly [400];

@@ -1,6 +1,9 @@
 function keyOf(k) {
   return `${k.theme}::${k.icon}::${k.fill}::${k.weight}::${k.size}`;
 }
+function customKeyOf(k) {
+  return `custom::${k.icon}::_::_::${k.size}`;
+}
 function parseSvg(svg) {
   const viewBoxMatch = svg.match(/viewBox="([^"]+)"/i);
   const pathMatch = svg.match(/<path[^>]*\sd="([^"]+)"[^>]*>/i);
@@ -33,9 +36,10 @@ function normalizeThemes(input, fallback) {
 export {
   normalizeFills as a,
   normalizeThemes as b,
+  customKeyOf as c,
   keyOf as k,
   normalizeNums as n,
   parseSvg as p,
   unique as u
 };
-//# sourceMappingURL=utils-Bn2O7Hbn.js.map
+//# sourceMappingURL=utils-Jy7vWe-6.js.map

@@ -1,14 +1,26 @@
-import { k as keyOf, p as parseSvg } from "./utils-Bn2O7Hbn.js";
+import { k as keyOf, c as customKeyOf, p as parseSvg } from "./utils-Jy7vWe-6.js";
 import RAW_MAP from "./loader-map.js";
 const REGISTRY = /* @__PURE__ */ new Map();
 function getSymbol(k) {
-  const key = keyOf(k);
+  let key = keyOf(k);
   {
     console.log(`[material-symbols-svg] Get symbol:`, key);
   }
   let symbol = REGISTRY.get(key);
   if (symbol) return symbol;
-  const raw = RAW_MAP[key];
+  let raw = RAW_MAP[key];
+  if (!raw) {
+    const cKey = customKeyOf(k);
+    {
+      console.log(`[material-symbols-svg] Get symbol (fallback to custom):`, cKey);
+    }
+    symbol = REGISTRY.get(cKey);
+    if (symbol) return symbol;
+    raw = RAW_MAP[cKey];
+    if (raw) {
+      key = cKey;
+    }
+  }
   if (raw) {
     symbol = parseSvg(raw) || void 0;
     if (symbol) {
