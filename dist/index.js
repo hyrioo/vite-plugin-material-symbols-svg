@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import { s as symbolConfig, n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, k as keyOf, c as customKeyOf, d as configureSymbolConfig } from "./config-DSPLkg-3.js";
+import { s as symbolConfig, n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, k as keyOf, c as customKeyOf, d as configureSymbolConfig } from "./config-CwDCMrnw.js";
 async function exists$1(p) {
   try {
     await fs.access(p);

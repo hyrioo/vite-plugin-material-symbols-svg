@@ -32,7 +32,7 @@ export type {
 };
 
 
-export function getSymbol(k: SymbolKey): Record<number, SymbolSvg> | undefined {
+export function getSymbol(k: SymbolKey): Record<OpticalSize, SymbolSvg> | undefined {
     const key = keyOf(k);
     const cKey = customKeyOf(k);
 
@@ -51,6 +51,8 @@ export function getSymbol(k: SymbolKey): Record<number, SymbolSvg> | undefined {
                 }
             }
             REGISTRY.set(rawGroup === RAW_MAP[key] ? key : cKey, available);
+        } else if (symbolConfig.debug) {
+            console.warn(`[material-symbols-svg] Symbol not found: ${key}`);
         }
     }
 

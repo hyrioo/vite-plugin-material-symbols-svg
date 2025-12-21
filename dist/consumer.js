@@ -1,5 +1,5 @@
-import { k as keyOf, c as customKeyOf, p as parseSvg } from "./config-DSPLkg-3.js";
-import { d, s } from "./config-DSPLkg-3.js";
+import { k as keyOf, c as customKeyOf, p as parseSvg, s as symbolConfig } from "./config-CwDCMrnw.js";
+import { d } from "./config-CwDCMrnw.js";
 import RAW_MAP from "./loader-map.js";
 const REGISTRY = /* @__PURE__ */ new Map();
 function getSymbol(k) {
@@ -10,13 +10,15 @@ function getSymbol(k) {
     const rawGroup = RAW_MAP[key] || RAW_MAP[cKey];
     if (rawGroup) {
       available = {};
-      for (const [s2, svg] of Object.entries(rawGroup)) {
+      for (const [s, svg] of Object.entries(rawGroup)) {
         const parsed = parseSvg(svg);
         if (parsed) {
-          available[Number(s2)] = parsed;
+          available[Number(s)] = parsed;
         }
       }
       REGISTRY.set(rawGroup === RAW_MAP[key] ? key : cKey, available);
+    } else if (symbolConfig.debug) {
+      console.warn(`[material-symbols-svg] Symbol not found: ${key}`);
     }
   }
   return available;
@@ -24,6 +26,6 @@ function getSymbol(k) {
 export {
   d as configureSymbolConfig,
   getSymbol,
-  s as symbolConfig
+  symbolConfig
 };
 //# sourceMappingURL=consumer.js.map
