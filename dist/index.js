@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import { n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, c as customKeyOf } from "./utils-Jy7vWe-6.js";
+import { s as symbolConfig, n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, c as customKeyOf, d as configureSymbolConfig } from "./config-BFYDHr0U.js";
 async function exists$1(p) {
   try {
     await fs.access(p);
@@ -95,9 +95,9 @@ async function exists(p) {
     return false;
   }
 }
-function axesString(weight, fill) {
+function axesString(weight, filled) {
   const w = weight === 400 ? "" : `wght${weight}`;
-  const f = fill === 0 ? "" : `fill${fill}`;
+  const f = filled === 0 ? "" : `fill${filled}`;
   const s = `${w}${f}`;
   return s.length ? s : "default";
 }
@@ -105,10 +105,10 @@ function buildSymbolUrl(theme, icon, axes, size) {
   const themePart = theme || "";
   return `https://fonts.gstatic.com/s/i/short-term/release/materialsymbols${themePart}/${icon}/${axes}/${size}px.svg`;
 }
-function toFilename(icon, fill, weight, size) {
+function toFilename(icon, filled, weight, size) {
   const w = Number.isFinite(weight) ? `.w${weight}` : "";
   const s = Number.isFinite(size) ? `.s${size}` : "";
-  const fillPart = fill === 1 ? "-fill" : "";
+  const fillPart = filled === 1 ? "-fill" : "";
   return `${icon}${fillPart}${w}${s}.svg`;
 }
 async function removeIfNotSvg(file) {
@@ -158,7 +158,7 @@ async function downloadSymbols(tasks, concurrency, logger) {
   return { saved, skipped, failed };
 }
 function defineIcons(symbols, custom, defaults) {
-  {
+  if (symbolConfig.debug) {
     const symbolCount = Object.keys(symbols || {}).length;
     const customCount = Object.keys(custom || {}).length;
     console.log(`[material-symbols-svg] defineIcons: symbols=${symbolCount}, custom=${customCount}`);
@@ -216,13 +216,13 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
       const themes = normalizeThemes(meta.themes ?? defaults.themes, IconDefaultConfig.themes);
       for (const theme of unique(themes)) {
         for (const weight of unique(weights)) {
-          for (const fill of unique(fills)) {
+          for (const filled of unique(fills)) {
             for (const size of unique(sizes)) {
-              const filename = toFilename(icon, fill, weight, size);
+              const filename = toFilename(icon, filled, weight, size);
               const importPath = `/symbols/${theme}/${filename}?raw`;
               const varName = `i${i++}`;
               imports.push(`import ${varName} from '${importPath}';`);
-              mapEntries.push(`  '${theme}::${icon}::${fill}::${weight}::${size}': ${varName},`);
+              mapEntries.push(`  '${theme}::${icon}::${filled}::${weight}::${size}': ${varName},`);
             }
           }
         }
@@ -277,8 +277,10 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
   const options = {
     concurrency: opts.concurrency ?? 8,
     strict: opts.strict ?? false,
-    enabled: opts.enabled ?? true
+    enabled: opts.enabled ?? true,
+    debug: opts.debug ?? (typeof process !== "undefined" && process.env.NODE_ENV !== "production")
   };
+  configureSymbolConfig({ debug: options.debug });
   if (!iconsDef || !iconsDef.Symbols) {
     throw new Error("[material-symbols-svg] First parameter must be the return value of defineIcons()");
   }
@@ -332,11 +334,11 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
         for (const theme of unique(themes)) {
           await ensureDir(path.resolve(outBase, theme));
           for (const weight of unique(weights)) {
-            for (const fill of unique(fills)) {
+            for (const filled of unique(fills)) {
               for (const size of unique(sizes)) {
-                const axes = axesString(weight, fill);
+                const axes = axesString(weight, filled);
                 const url = buildSymbolUrl(theme, icon, axes, size);
-                const file = path.resolve(outBase, theme, toFilename(icon, fill, weight, size));
+                const file = path.resolve(outBase, theme, toFilename(icon, filled, weight, size));
                 tasks.push({ url, file });
               }
             }
@@ -352,7 +354,9 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
   };
 }
 export {
+  configureSymbolConfig,
   defineIcons,
-  materialSymbolsSvg
+  materialSymbolsSvg,
+  symbolConfig
 };
 //# sourceMappingURL=index.js.map

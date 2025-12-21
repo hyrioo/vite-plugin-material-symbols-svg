@@ -1,11 +1,11 @@
 export type OpticalSize = 20 | 24 | 40 | 48;
 export type Weight = 100 | 200 | 300 | 400 | 500 | 600 | 700;
-export type Fill = boolean;
+export type Filled = boolean;
 export type Theme = 'rounded' | 'outlined' | 'sharp';
 export interface SymbolKey {
     icon: string;
     theme: Theme;
-    fill: 0 | 1;
+    filled: 0 | 1;
     weight: number;
     size: number;
 }
@@ -16,7 +16,7 @@ export interface SymbolSvg {
 export type IconConfig = {
     sizes: readonly OpticalSize[];
     weights?: readonly Weight[];
-    fills?: readonly Fill[];
+    fills?: readonly Filled[];
     themes?: readonly Theme[];
 };
 export type DefinedIcons = {

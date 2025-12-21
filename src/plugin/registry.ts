@@ -4,7 +4,7 @@ import { toFilename } from './symbols';
 import {
     type DefineCustomMap,
     type DefinedIcons,
-    type Fill,
+    type Filled,
     type IconConfig,
     type OpticalSize,
     type SymbolKey,
@@ -14,10 +14,9 @@ import {
 } from '../shared/types';
 import { customKeyOf, normalizeFills, normalizeNums, normalizeThemes, unique } from '../shared/utils';
 import { MaterialSymbolIcon } from './icons';
+import { symbolConfig } from '../shared/config';
 
-export type { OpticalSize, Weight, Fill, Theme, SymbolKey, SymbolSvg, IconConfig, DefinedIcons, DefineCustomMap };
-
-const IS_DEV = true;
+export type { OpticalSize, Weight, Filled, Theme, SymbolKey, SymbolSvg, IconConfig, DefinedIcons, DefineCustomMap };
 
 /**
  * defineIcons
@@ -34,7 +33,7 @@ export function defineIcons<
     custom: C,
     defaults: D,
 ): DefinedIcons {
-    if (IS_DEV) {
+    if (symbolConfig.debug) {
         const symbolCount = Object.keys(symbols || {}).length;
         const customCount = Object.keys(custom || {}).length;
         console.log(`[material-symbols-svg] defineIcons: symbols=${symbolCount}, custom=${customCount}`);
@@ -109,13 +108,13 @@ export async function generateConsumerFiles(
 
             for (const theme of unique(themes)) {
                 for (const weight of unique(weights)) {
-                    for (const fill of unique(fills)) {
+                    for (const filled of unique(fills)) {
                         for (const size of unique(sizes)) {
-                            const filename = toFilename(icon, fill as 0 | 1, weight, size);
+                            const filename = toFilename(icon, filled as 0 | 1, weight, size);
                             const importPath = `/symbols/${theme}/${filename}?raw`;
                             const varName = `i${i++}`;
                             imports.push(`import ${varName} from '${importPath}';`);
-                            mapEntries.push(`  '${theme}::${icon}::${fill}::${weight}::${size}': ${varName},`);
+                            mapEntries.push(`  '${theme}::${icon}::${filled}::${weight}::${size}': ${varName},`);
                         }
                     }
                 }

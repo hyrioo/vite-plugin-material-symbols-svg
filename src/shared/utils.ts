@@ -9,7 +9,7 @@ import {
 } from './types';
 
 export function keyOf(k: SymbolKey): string {
-    return `${k.theme}::${k.icon}::${k.fill}::${k.weight}::${k.size}`;
+    return `${k.theme}::${k.icon}::${k.filled}::${k.weight}::${k.size}`;
 }
 
 export function customKeyOf(k: SymbolKey): string {

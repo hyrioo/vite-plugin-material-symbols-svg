@@ -1,19 +1,14 @@
-import { k as keyOf, c as customKeyOf, p as parseSvg } from "./utils-Jy7vWe-6.js";
+import { k as keyOf, c as customKeyOf, p as parseSvg, s as symbolConfig } from "./config-BFYDHr0U.js";
+import { d } from "./config-BFYDHr0U.js";
 import RAW_MAP from "./loader-map.js";
 const REGISTRY = /* @__PURE__ */ new Map();
 function getSymbol(k) {
   let key = keyOf(k);
-  {
-    console.log(`[material-symbols-svg] Get symbol:`, key);
-  }
   let symbol = REGISTRY.get(key);
   if (symbol) return symbol;
   let raw = RAW_MAP[key];
   if (!raw) {
     const cKey = customKeyOf(k);
-    {
-      console.log(`[material-symbols-svg] Get symbol (fallback to custom):`, cKey);
-    }
     symbol = REGISTRY.get(cKey);
     if (symbol) return symbol;
     raw = RAW_MAP[cKey];
@@ -25,18 +20,17 @@ function getSymbol(k) {
     symbol = parseSvg(raw) || void 0;
     if (symbol) {
       REGISTRY.set(key, symbol);
-      {
-        console.log(`[material-symbols-svg] getSymbol: parsed and cached "${key}"`);
-      }
       return symbol;
     }
   }
-  {
-    console.warn(`[material-symbols-svg] getSymbol: NOT found "${key}"`);
+  if (symbolConfig.debug) {
+    console.warn(`[material-symbols-svg] Symbol not found "${key}"`);
   }
   return void 0;
 }
 export {
-  getSymbol
+  d as configureSymbolConfig,
+  getSymbol,
+  symbolConfig
 };
 //# sourceMappingURL=consumer.js.map

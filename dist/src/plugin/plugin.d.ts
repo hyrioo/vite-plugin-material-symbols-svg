@@ -4,5 +4,6 @@ export interface MaterialSymbolsPluginOptions {
     concurrency?: number;
     strict?: boolean;
     enabled?: boolean;
+    debug?: boolean;
 }
 export declare function materialSymbolsSvg(iconsDef: IconsInput, opts?: MaterialSymbolsPluginOptions): Plugin;

@@ -4,7 +4,7 @@
 import {
     type DefineCustomMap,
     type DefinedIcons,
-    type Fill,
+    type Filled,
     type IconConfig,
     type OpticalSize,
     type SymbolKey,
@@ -13,17 +13,16 @@ import {
     type Weight,
 } from '../shared/types';
 import { customKeyOf, keyOf, parseSvg } from '../shared/utils';
+import { symbolConfig } from '../shared/config';
 import RAW_MAP from './loader-map.js';
 
 // Internal registry map (parsed cache)
 const REGISTRY = new Map<string, SymbolSvg>();
 
-const IS_DEV = true;
-
 export type {
     OpticalSize,
     Weight,
-    Fill,
+    Filled,
     Theme,
     IconConfig,
     DefinedIcons,
@@ -34,9 +33,6 @@ export type {
 
 export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
     let key = keyOf(k);
-    if (IS_DEV) {
-        console.log(`[material-symbols-svg] Get symbol:`, key);
-    }
 
     // 1. Check parsed cache
     let symbol = REGISTRY.get(key);
@@ -48,9 +44,6 @@ export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
     // 3. Fallback to custom icon key format if not found
     if (!raw) {
         const cKey = customKeyOf(k);
-        if (IS_DEV) {
-            console.log(`[material-symbols-svg] Get symbol (fallback to custom):`, cKey);
-        }
         symbol = REGISTRY.get(cKey);
         if (symbol) return symbol;
 
@@ -64,15 +57,12 @@ export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
         symbol = parseSvg(raw) || undefined;
         if (symbol) {
             REGISTRY.set(key, symbol);
-            if (IS_DEV) {
-                console.log(`[material-symbols-svg] getSymbol: parsed and cached "${key}"`);
-            }
             return symbol;
         }
     }
 
-    if (IS_DEV) {
-        console.warn(`[material-symbols-svg] getSymbol: NOT found "${key}"`);
+    if (symbolConfig.debug) {
+        console.warn(`[material-symbols-svg] Symbol not found "${key}"`);
     }
     return undefined;
 }

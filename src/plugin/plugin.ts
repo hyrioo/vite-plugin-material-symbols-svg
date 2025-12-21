@@ -6,11 +6,13 @@ import { axesString, buildSymbolUrl, downloadSymbols, toFilename } from './symbo
 import { type DefinedIcons as IconsInput, generateConsumerFiles, IconConfig, IconDefaultConfig } from './registry';
 import { Theme } from '../shared/types';
 import { normalizeFills, normalizeNums, normalizeThemes, unique } from '../shared/utils';
+import { configureSymbolConfig } from '../shared/config';
 
 export interface MaterialSymbolsPluginOptions {
     concurrency?: number;
     strict?: boolean;                // fail build when downloads fail
     enabled?: boolean;
+    debug?: boolean;
 }
 
 async function ensureDir(dir: string) {
@@ -22,7 +24,10 @@ export function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialSymbolsPl
         concurrency: opts.concurrency ?? 8,
         strict: opts.strict ?? false,
         enabled: opts.enabled ?? true,
+        debug: opts.debug ?? (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production'),
     } as Required<MaterialSymbolsPluginOptions>;
+
+    configureSymbolConfig({debug: options.debug});
 
     if (!iconsDef || !iconsDef.Symbols) {
         throw new Error('[material-symbols-svg] First parameter must be the return value of defineIcons()');
@@ -94,11 +99,11 @@ export function materialSymbolsSvg(iconsDef: IconsInput, opts: MaterialSymbolsPl
                 for (const theme of unique(themes)) {
                     await ensureDir(path.resolve(outBase, theme));
                     for (const weight of unique(weights)) {
-                        for (const fill of unique(fills)) {
+                        for (const filled of unique(fills)) {
                             for (const size of unique(sizes)) {
-                                const axes = axesString(weight, fill);
+                                const axes = axesString(weight, filled);
                                 const url = buildSymbolUrl(theme as Theme, icon, axes, size);
-                                const file = path.resolve(outBase, theme, toFilename(icon, fill as 0 | 1, weight, size));
+                                const file = path.resolve(outBase, theme, toFilename(icon, filled as 0 | 1, weight, size));
                                 tasks.push({url, file});
                             }
                         }

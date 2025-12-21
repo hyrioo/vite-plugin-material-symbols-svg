@@ -1,7 +1,7 @@
 import type { PluginContext } from 'rollup';
-import { type DefineCustomMap, type DefinedIcons, type Fill, type IconConfig, type OpticalSize, type SymbolKey, type SymbolSvg, type Theme, type Weight } from '../shared/types';
+import { type DefineCustomMap, type DefinedIcons, type Filled, type IconConfig, type OpticalSize, type SymbolKey, type SymbolSvg, type Theme, type Weight } from '../shared/types';
 import { MaterialSymbolIcon } from './icons';
-export type { OpticalSize, Weight, Fill, Theme, SymbolKey, SymbolSvg, IconConfig, DefinedIcons, DefineCustomMap };
+export type { OpticalSize, Weight, Filled, Theme, SymbolKey, SymbolSvg, IconConfig, DefinedIcons, DefineCustomMap };
 /**
  * defineIcons
  * - symbols: the Material Symbols configuration per icon

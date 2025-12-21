@@ -1,5 +1,5 @@
 function keyOf(k) {
-  return `${k.theme}::${k.icon}::${k.fill}::${k.weight}::${k.size}`;
+  return `${k.theme}::${k.icon}::${k.filled}::${k.weight}::${k.size}`;
 }
 function customKeyOf(k) {
   return `custom::${k.icon}::_::_::${k.size}`;
@@ -33,13 +33,29 @@ function normalizeThemes(input, fallback) {
   const arr = Array.from(src).map((t) => String(t).toLowerCase()).filter((t) => allowed.includes(t));
   return unique(arr);
 }
+let _config = {
+  debug: typeof process !== "undefined" && process.env.NODE_ENV !== "production"
+};
+function configureSymbolConfig(overrides) {
+  _config = {
+    ..._config,
+    ...overrides
+  };
+}
+const symbolConfig = {
+  get debug() {
+    return _config.debug;
+  }
+};
 export {
   normalizeFills as a,
   normalizeThemes as b,
   customKeyOf as c,
+  configureSymbolConfig as d,
   keyOf as k,
   normalizeNums as n,
   parseSvg as p,
+  symbolConfig as s,
   unique as u
 };
-//# sourceMappingURL=utils-Jy7vWe-6.js.map
+//# sourceMappingURL=config-BFYDHr0U.js.map

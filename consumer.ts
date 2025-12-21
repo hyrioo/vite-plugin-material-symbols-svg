@@ -1,10 +1,11 @@
 export {
     getSymbol,
 } from './src/consumer/loader';
+export { configureSymbolConfig, symbolConfig } from './src/shared/config';
 export type {
     OpticalSize,
     Weight,
-    Fill,
+    Filled,
     Theme,
     IconConfig,
     DefinedIcons,

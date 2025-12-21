@@ -10,9 +10,9 @@ async function exists(p: string) {
     }
 }
 
-export function axesString(weight: number, fill: 0 | 1) {
+export function axesString(weight: number, filled: 0 | 1) {
     const w = weight === 400 ? '' : `wght${weight}`;
-    const f = fill === 0 ? '' : `fill${fill}`;
+    const f = filled === 0 ? '' : `fill${filled}`;
     const s = `${w}${f}`;
     return s.length ? s : 'default';
 }
@@ -22,10 +22,10 @@ export function buildSymbolUrl(theme: Theme, icon: string, axes: string, size: n
     return `https://fonts.gstatic.com/s/i/short-term/release/materialsymbols${themePart}/${icon}/${axes}/${size}px.svg`;
 }
 
-export function toFilename(icon: string, fill: 0 | 1, weight: number, size: number) {
+export function toFilename(icon: string, filled: 0 | 1, weight: number, size: number) {
     const w = Number.isFinite(weight) ? `.w${weight}` : '';
     const s = Number.isFinite(size) ? `.s${size}` : '';
-    const fillPart = fill === 1 ? '-fill' : '';
+    const fillPart = filled === 1 ? '-fill' : '';
     return `${icon}${fillPart}${w}${s}.svg`;
 }
 
