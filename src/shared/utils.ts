@@ -9,11 +9,11 @@ import {
 } from './types';
 
 export function keyOf(k: SymbolKey): string {
-    return `${k.theme}::${k.icon}::${k.filled}::${k.weight}::${k.size}`;
+    return `${k.theme}::${k.icon}::${k.filled}::${k.weight}`;
 }
 
-export function customKeyOf(k: SymbolKey): string {
-    return `custom::${k.icon}::_::_::${k.size}`;
+export function customKeyOf(k: Pick<SymbolKey, 'icon'>): string {
+    return `custom::${k.icon}::_::_`;
 }
 
 export function parseSvg(svg: string): SymbolSvg | null {

@@ -17,7 +17,7 @@ import { symbolConfig } from '../shared/config';
 import RAW_MAP from './loader-map.js';
 
 // Internal registry map (parsed cache)
-const REGISTRY = new Map<string, SymbolSvg>();
+const REGISTRY = new Map<string, Record<number, SymbolSvg>>();
 
 export type {
     OpticalSize,
@@ -31,38 +31,28 @@ export type {
     DefineCustomMap,
 };
 
-export function getSymbol(k: SymbolKey): SymbolSvg | undefined {
-    let key = keyOf(k);
+
+export function getSymbol(k: SymbolKey): Record<number, SymbolSvg> | undefined {
+    const key = keyOf(k);
+    const cKey = customKeyOf(k);
 
     // 1. Check parsed cache
-    let symbol = REGISTRY.get(key);
-    if (symbol) return symbol;
+    let available = REGISTRY.get(key) || REGISTRY.get(cKey);
 
-    // 2. Check raw map
-    let raw = RAW_MAP[key];
-
-    // 3. Fallback to custom icon key format if not found
-    if (!raw) {
-        const cKey = customKeyOf(k);
-        symbol = REGISTRY.get(cKey);
-        if (symbol) return symbol;
-
-        raw = RAW_MAP[cKey];
-        if (raw) {
-            key = cKey;
+    if (!available) {
+        // 2. Check raw map
+        const rawGroup = RAW_MAP[key] || RAW_MAP[cKey];
+        if (rawGroup) {
+            available = {};
+            for (const [s, svg] of Object.entries(rawGroup)) {
+                const parsed = parseSvg(svg as string);
+                if (parsed) {
+                    available[Number(s)] = parsed;
+                }
+            }
+            REGISTRY.set(rawGroup === RAW_MAP[key] ? key : cKey, available);
         }
     }
 
-    if (raw) {
-        symbol = parseSvg(raw) || undefined;
-        if (symbol) {
-            REGISTRY.set(key, symbol);
-            return symbol;
-        }
-    }
-
-    if (symbolConfig.debug) {
-        console.warn(`[material-symbols-svg] Symbol not found "${key}"`);
-    }
-    return undefined;
+    return available;
 }

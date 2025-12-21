@@ -7,7 +7,6 @@ export interface SymbolKey {
     theme: Theme;
     filled: 0 | 1;
     weight: number;
-    size: number;
 }
 export interface SymbolSvg {
     d: string;

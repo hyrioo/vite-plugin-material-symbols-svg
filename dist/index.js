@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import { s as symbolConfig, n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, c as customKeyOf, d as configureSymbolConfig } from "./config-BFYDHr0U.js";
+import { s as symbolConfig, n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, k as keyOf, c as customKeyOf, d as configureSymbolConfig } from "./config-DSPLkg-3.js";
 async function exists$1(p) {
   try {
     await fs.access(p);
@@ -217,18 +217,25 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
       for (const theme of unique(themes)) {
         for (const weight of unique(weights)) {
           for (const filled of unique(fills)) {
+            const key = keyOf({ theme, icon, filled, weight });
+            const entries = [];
             for (const size of unique(sizes)) {
               const filename = toFilename(icon, filled, weight, size);
               const importPath = `/symbols/${theme}/${filename}?raw`;
               const varName = `i${i++}`;
               imports.push(`import ${varName} from '${importPath}';`);
-              mapEntries.push(`  '${theme}::${icon}::${filled}::${weight}::${size}': ${varName},`);
+              entries.push(`      ${size}: ${varName}`);
             }
+            mapEntries.push(`  '${key}': {
+${entries.join(",\n")}
+  },`);
           }
         }
       }
     }
     for (const [icon, sizesObj] of Object.entries(iconsDef.Custom || {})) {
+      const key = customKeyOf({ icon });
+      const entries = [];
       for (const [sizeKey, val] of Object.entries(sizesObj || {})) {
         let value = val;
         if (value && typeof value === "object" && "then" in value && typeof value.then === "function") {
@@ -237,15 +244,18 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
         if (typeof value === "string" && (value.startsWith("./") || value.startsWith("../"))) {
           const varName = `i${i++}`;
           imports.push(`import ${varName} from '${value}?raw';`);
-          const key = customKeyOf({ icon, size: Number(sizeKey) });
-          mapEntries.push(`  '${key}': ${varName},`);
+          entries.push(`      ${sizeKey}: ${varName}`);
         } else if (value) {
           const content = typeof value === "object" && "default" in value ? value.default : value;
           if (typeof content === "string") {
-            const key = customKeyOf({ icon, size: Number(sizeKey) });
-            mapEntries.push(`  '${key}': ${JSON.stringify(content)},`);
+            entries.push(`      ${sizeKey}: ${JSON.stringify(content)}`);
           }
         }
+      }
+      if (entries.length) {
+        mapEntries.push(`  '${key}': {
+${entries.join(",\n")}
+  },`);
       }
     }
     const mapContent = `${banner}${imports.join("\n")}

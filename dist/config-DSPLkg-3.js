@@ -1,8 +1,8 @@
 function keyOf(k) {
-  return `${k.theme}::${k.icon}::${k.filled}::${k.weight}::${k.size}`;
+  return `${k.theme}::${k.icon}::${k.filled}::${k.weight}`;
 }
 function customKeyOf(k) {
-  return `custom::${k.icon}::_::_::${k.size}`;
+  return `custom::${k.icon}::_::_`;
 }
 function parseSvg(svg) {
   const viewBoxMatch = svg.match(/viewBox="([^"]+)"/i);
@@ -58,4 +58,4 @@ export {
   symbolConfig as s,
   unique as u
 };
-//# sourceMappingURL=config-BFYDHr0U.js.map
+//# sourceMappingURL=config-DSPLkg-3.js.map

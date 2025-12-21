@@ -1,36 +1,29 @@
-import { k as keyOf, c as customKeyOf, p as parseSvg, s as symbolConfig } from "./config-BFYDHr0U.js";
-import { d } from "./config-BFYDHr0U.js";
+import { k as keyOf, c as customKeyOf, p as parseSvg } from "./config-DSPLkg-3.js";
+import { d, s } from "./config-DSPLkg-3.js";
 import RAW_MAP from "./loader-map.js";
 const REGISTRY = /* @__PURE__ */ new Map();
 function getSymbol(k) {
-  let key = keyOf(k);
-  let symbol = REGISTRY.get(key);
-  if (symbol) return symbol;
-  let raw = RAW_MAP[key];
-  if (!raw) {
-    const cKey = customKeyOf(k);
-    symbol = REGISTRY.get(cKey);
-    if (symbol) return symbol;
-    raw = RAW_MAP[cKey];
-    if (raw) {
-      key = cKey;
+  const key = keyOf(k);
+  const cKey = customKeyOf(k);
+  let available = REGISTRY.get(key) || REGISTRY.get(cKey);
+  if (!available) {
+    const rawGroup = RAW_MAP[key] || RAW_MAP[cKey];
+    if (rawGroup) {
+      available = {};
+      for (const [s2, svg] of Object.entries(rawGroup)) {
+        const parsed = parseSvg(svg);
+        if (parsed) {
+          available[Number(s2)] = parsed;
+        }
+      }
+      REGISTRY.set(rawGroup === RAW_MAP[key] ? key : cKey, available);
     }
   }
-  if (raw) {
-    symbol = parseSvg(raw) || void 0;
-    if (symbol) {
-      REGISTRY.set(key, symbol);
-      return symbol;
-    }
-  }
-  if (symbolConfig.debug) {
-    console.warn(`[material-symbols-svg] Symbol not found "${key}"`);
-  }
-  return void 0;
+  return available;
 }
 export {
   d as configureSymbolConfig,
   getSymbol,
-  symbolConfig
+  s as symbolConfig
 };
 //# sourceMappingURL=consumer.js.map

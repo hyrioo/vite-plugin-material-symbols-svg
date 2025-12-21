@@ -12,7 +12,7 @@ import {
     type Theme,
     type Weight,
 } from '../shared/types';
-import { customKeyOf, normalizeFills, normalizeNums, normalizeThemes, unique } from '../shared/utils';
+import { customKeyOf, keyOf, normalizeFills, normalizeNums, normalizeThemes, unique } from '../shared/utils';
 import { MaterialSymbolIcon } from './icons';
 import { symbolConfig } from '../shared/config';
 
@@ -109,13 +109,16 @@ export async function generateConsumerFiles(
             for (const theme of unique(themes)) {
                 for (const weight of unique(weights)) {
                     for (const filled of unique(fills)) {
+                        const key = keyOf({ theme, icon, filled, weight } as any);
+                        const entries: string[] = [];
                         for (const size of unique(sizes)) {
                             const filename = toFilename(icon, filled as 0 | 1, weight, size);
                             const importPath = `/symbols/${theme}/${filename}?raw`;
                             const varName = `i${i++}`;
                             imports.push(`import ${varName} from '${importPath}';`);
-                            mapEntries.push(`  '${theme}::${icon}::${filled}::${weight}::${size}': ${varName},`);
+                            entries.push(`      ${size}: ${varName}`);
                         }
+                        mapEntries.push(`  '${key}': {\n${entries.join(',\n')}\n  },`);
                     }
                 }
             }
@@ -123,6 +126,8 @@ export async function generateConsumerFiles(
 
         // Add custom icons to the map
         for (const [icon, sizesObj] of Object.entries(iconsDef.Custom || {})) {
+            const key = customKeyOf({ icon } as any);
+            const entries: string[] = [];
             for (const [sizeKey, val] of Object.entries(sizesObj as any || {})) {
                 let value = val;
                 if (value && typeof value === 'object' && 'then' in value && typeof (value as any).then === 'function') {
@@ -132,8 +137,7 @@ export async function generateConsumerFiles(
                 if (typeof value === 'string' && (value.startsWith('./') || value.startsWith('../'))) {
                     const varName = `i${i++}`;
                     imports.push(`import ${varName} from '${value}?raw';`);
-                    const key = customKeyOf({ icon, size: Number(sizeKey) } as any);
-                    mapEntries.push(`  '${key}': ${varName},`);
+                    entries.push(`      ${sizeKey}: ${varName}`);
                 } else if (value) {
                     // It's already imported or literal content
                     const content = (typeof value === 'object' && 'default' in value)
@@ -141,10 +145,12 @@ export async function generateConsumerFiles(
                         : value;
 
                     if (typeof content === 'string') {
-                        const key = customKeyOf({ icon, size: Number(sizeKey) } as any);
-                        mapEntries.push(`  '${key}': ${JSON.stringify(content)},`);
+                        entries.push(`      ${sizeKey}: ${JSON.stringify(content)}`);
                     }
                 }
+            }
+            if (entries.length) {
+                mapEntries.push(`  '${key}': {\n${entries.join(',\n')}\n  },`);
             }
         }
 
