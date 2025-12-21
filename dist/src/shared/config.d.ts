@@ -1,3 +1,4 @@
+export declare const isProduction: boolean;
 export interface SymbolConfig {
     debug: boolean;
 }

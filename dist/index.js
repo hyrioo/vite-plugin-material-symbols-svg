@@ -1,6 +1,7 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import { s as symbolConfig, n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, k as keyOf, c as customKeyOf, d as configureSymbolConfig } from "./config-CwDCMrnw.js";
+import { s as symbolConfig, n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, k as keyOf, c as customKeyOf, d as configureSymbolConfig } from "./config-BFYbk86b.js";
+import { i } from "./config-BFYbk86b.js";
 async function exists$1(p) {
   try {
     await fs.access(p);
@@ -23,8 +24,8 @@ async function fetchVersions(ctx, versionsFile, iconsTsFile, options) {
     }
     let txt = await res.text();
     if (txt.startsWith(")]}'")) {
-      const i = txt.indexOf("\n");
-      if (i !== -1) txt = txt.substring(i + 1);
+      const i2 = txt.indexOf("\n");
+      if (i2 !== -1) txt = txt.substring(i2 + 1);
     }
     let parsed;
     try {
@@ -124,8 +125,8 @@ async function withConcurrency(items, limit, worker) {
   let idx = 0;
   const run = async () => {
     while (idx < items.length) {
-      const i = idx++;
-      ret[i] = await worker(items[i], i);
+      const i2 = idx++;
+      ret[i2] = await worker(items[i2], i2);
     }
   };
   const runners = Array.from({ length: Math.min(limit, items.length) }, run);
@@ -208,7 +209,7 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
     const imports = [];
     const mapEntries = [];
     const defaults = iconsDef.Default ?? {};
-    let i = 0;
+    let i2 = 0;
     for (const [icon, meta] of Object.entries(iconsDef.Symbols || {})) {
       const sizes = normalizeNums(meta.sizes ?? defaults.sizes, IconDefaultConfig.sizes);
       const weights = normalizeNums(meta.weights ?? defaults.weights, IconDefaultConfig.weights);
@@ -222,7 +223,7 @@ async function generateConsumerFiles(ctx, iconsDef, loaderTypesFile, loaderMapFi
             for (const size of unique(sizes)) {
               const filename = toFilename(icon, filled, weight, size);
               const importPath = `/symbols/${theme}/${filename}?raw`;
-              const varName = `i${i++}`;
+              const varName = `i${i2++}`;
               imports.push(`import ${varName} from '${importPath}';`);
               entries.push(`      ${size}: ${varName}`);
             }
@@ -242,7 +243,7 @@ ${entries.join(",\n")}
           value = await value;
         }
         if (typeof value === "string" && (value.startsWith("./") || value.startsWith("../"))) {
-          const varName = `i${i++}`;
+          const varName = `i${i2++}`;
           imports.push(`import ${varName} from '${value}?raw';`);
           entries.push(`      ${sizeKey}: ${varName}`);
         } else if (value) {
@@ -366,6 +367,7 @@ function materialSymbolsSvg(iconsDef, opts = {}) {
 export {
   configureSymbolConfig,
   defineIcons,
+  i as isProduction,
   materialSymbolsSvg,
   symbolConfig
 };

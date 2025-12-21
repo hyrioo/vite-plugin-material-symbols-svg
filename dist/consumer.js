@@ -1,5 +1,5 @@
-import { k as keyOf, c as customKeyOf, p as parseSvg, s as symbolConfig } from "./config-CwDCMrnw.js";
-import { d } from "./config-CwDCMrnw.js";
+import { k as keyOf, c as customKeyOf, p as parseSvg, s as symbolConfig } from "./config-BFYbk86b.js";
+import { d } from "./config-BFYbk86b.js";
 import RAW_MAP from "./loader-map.js";
 const REGISTRY = /* @__PURE__ */ new Map();
 function getSymbol(k) {

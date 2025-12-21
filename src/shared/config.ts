@@ -1,11 +1,13 @@
 import { readonly } from 'vue';
 
+export const isProduction = typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE === 'production';
+
 export interface SymbolConfig {
     debug: boolean;
 }
 
 let _config: SymbolConfig = {
-    debug: (typeof process !== 'undefined' && process.env.NODE_ENV !== 'production'),
+    debug: isProduction,
 };
 console.log('vite-plugin-material-symbols-svg debug:', _config.debug);
 

@@ -1903,8 +1903,10 @@ function initDev() {
 if (!!(process.env.NODE_ENV !== "production")) {
   initDev();
 }
+const __vite_import_meta_env__ = { "BASE_URL": "/", "DEV": false, "MODE": "production", "PROD": true, "SSR": false };
+const isProduction = typeof import.meta !== "undefined" && __vite_import_meta_env__ && true;
 let _config = {
-  debug: typeof process !== "undefined" && process.env.NODE_ENV !== "production"
+  debug: isProduction
 };
 console.log("vite-plugin-material-symbols-svg debug:", _config.debug);
 function configureSymbolConfig(overrides) {
@@ -1923,10 +1925,11 @@ export {
   normalizeThemes as b,
   customKeyOf as c,
   configureSymbolConfig as d,
+  isProduction as i,
   keyOf as k,
   normalizeNums as n,
   parseSvg as p,
   symbolConfig as s,
   unique as u
 };
-//# sourceMappingURL=config-CwDCMrnw.js.map
+//# sourceMappingURL=config-BFYbk86b.js.map
