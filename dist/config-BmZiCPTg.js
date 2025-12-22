@@ -2,13 +2,16 @@ function keyOf(k) {
   return `${k.theme}::${k.icon}::${k.filled}::${k.weight}`;
 }
 function customKeyOf(k) {
-  return `custom::${k.icon}::_::_`;
+  return `custom::${k.icon}`;
 }
 function parseSvg(svg) {
   const viewBoxMatch = svg.match(/viewBox="([^"]+)"/i);
-  const pathMatch = svg.match(/<path[^>]*\sd="([^"]+)"[^>]*>/i);
-  if (!viewBoxMatch || !pathMatch) return null;
-  return { viewBox: viewBoxMatch[1], d: pathMatch[1] };
+  const contentMatch = svg.match(/>([\s\S]*?)<\/svg>/i);
+  if (!viewBoxMatch || !contentMatch) return null;
+  return {
+    viewBox: viewBoxMatch[1],
+    content: contentMatch[1].trim()
+  };
 }
 function unique(arr) {
   return Array.from(new Set(arr));
@@ -1932,4 +1935,4 @@ export {
   symbolConfig as s,
   unique as u
 };
-//# sourceMappingURL=config-BFYbk86b.js.map
+//# sourceMappingURL=config-BmZiCPTg.js.map

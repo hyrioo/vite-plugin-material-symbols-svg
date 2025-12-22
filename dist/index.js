@@ -1,7 +1,7 @@
 import path from "node:path";
 import fs from "node:fs/promises";
-import { s as symbolConfig, n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, k as keyOf, c as customKeyOf, d as configureSymbolConfig } from "./config-BFYbk86b.js";
-import { i } from "./config-BFYbk86b.js";
+import { s as symbolConfig, n as normalizeNums, a as normalizeFills, b as normalizeThemes, u as unique, k as keyOf, c as customKeyOf, d as configureSymbolConfig } from "./config-BmZiCPTg.js";
+import { i } from "./config-BmZiCPTg.js";
 async function exists$1(p) {
   try {
     await fs.access(p);

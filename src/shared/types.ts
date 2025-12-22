@@ -11,7 +11,7 @@ export interface SymbolKey {
 }
 
 export interface SymbolSvg {
-    d: string;
+    content: string;
     viewBox: string;
 }
 

@@ -9,7 +9,7 @@ export interface SymbolKey {
     weight: number;
 }
 export interface SymbolSvg {
-    d: string;
+    content: string;
     viewBox: string;
 }
 export type IconConfig = {

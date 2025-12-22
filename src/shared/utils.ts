@@ -13,14 +13,20 @@ export function keyOf(k: SymbolKey): string {
 }
 
 export function customKeyOf(k: Pick<SymbolKey, 'icon'>): string {
-    return `custom::${k.icon}::_::_`;
+    return `custom::${k.icon}`;
 }
 
 export function parseSvg(svg: string): SymbolSvg | null {
     const viewBoxMatch = svg.match(/viewBox="([^"]+)"/i);
-    const pathMatch = svg.match(/<path[^>]*\sd="([^"]+)"[^>]*>/i);
-    if (!viewBoxMatch || !pathMatch) return null;
-    return { viewBox: viewBoxMatch[1], d: pathMatch[1] };
+    // Matches everything between the first > and the last </svg>
+    const contentMatch = svg.match(/>([\s\S]*?)<\/svg>/i);
+
+    if (!viewBoxMatch || !contentMatch) return null;
+
+    return {
+        viewBox: viewBoxMatch[1],
+        content: contentMatch[1].trim()
+    };
 }
 
 export function unique<T>(arr: T[]): T[] {
