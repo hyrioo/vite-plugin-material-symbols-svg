@@ -9,7 +9,6 @@ export interface SymbolConfig {
 let _config: SymbolConfig = {
     debug: isProduction,
 };
-console.log('vite-plugin-material-symbols-svg debug:', _config.debug);
 
 export function configureSymbolConfig(overrides: Partial<SymbolConfig>) {
     _config = {

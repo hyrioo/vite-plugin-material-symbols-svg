@@ -1911,7 +1911,6 @@ const isProduction = typeof import.meta !== "undefined" && __vite_import_meta_en
 let _config = {
   debug: isProduction
 };
-console.log("vite-plugin-material-symbols-svg debug:", _config.debug);
 function configureSymbolConfig(overrides) {
   _config = {
     ..._config,
@@ -1935,4 +1934,4 @@ export {
   symbolConfig as s,
   unique as u
 };
-//# sourceMappingURL=config-BmZiCPTg.js.map
+//# sourceMappingURL=config-Pn2OSTF5.js.map

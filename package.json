@@ -1,4 +1,5 @@
 {
+  "private": false,
   "name": "@hyrioo/vite-plugin-material-symbols-svg",
   "version": "0.1.0",
   "description": "Vite plugin and registry for Material Symbols SVG icons",
